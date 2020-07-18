@@ -1,0 +1,27 @@
+#################################
+Data set SILVA_138
+Path: IP:10.157.33.67: /home/disk3/zhangruyi/database/SILVA_138
+SILVA_138_SSURef_NR99_05_01_20_opt.arb.gz
+SILVA_138_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz
+SILVA_138_SSURef_NR99_tax_silva_trunc.fasta.gz
+
+All file download from silva and checked in command md5sum
+#################################
+
+
+Primer cover all NR99 sequences: Bacteria, Archaea and Fungi
+Primer prospector designed 10 bp, coverage over 90% primers.
+
+nohup generate_primers_denovo.py -p 0.9 -s 10 -l all-log.txt -r 40000:45000 -i Archaea-Bacteria-Fungi.fasta -o All-Primers.CV90.txt &
+however, the SSU data is too large, to accelerate primer design speed, 
+
+To keep taxonomy information after usearch process, use “sed -e ‘s/\s/_/’ file > new_file”
+Then, use sed command to change u to U, U to T. Primer prospector only recognize normal format DNA files.
+Awk extract bacteria, archaea and fungi sequences, then cat three types sequences into one fasta file.
+awk 'BEGIN {RS="\n>"}/Fungi/{print ">"$0}' SILVA_138.aligned.fasta > Fungi.fasta
+cat three files
+
+usearch -sortbylength SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.clean.fasta -fastaout SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.sorted.fasta -minseqlength 64
+usearch -cluster_smallmem SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.sorted.fasta -id 0.9 -centroids SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.id90.fasta -uc clusters.id90.uc
+
+/home/server/sina-1.6.1-linux/sina -i SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.id90.fasta -r SILVA_138_SSURef_NR99_05_01_20_opt.arb -o SILVA_138_SSURef_NR99_tax_silva_trunc_fix.Bac-Arch-Fun.id90.aligned.fasta

@@ -1,0 +1,11 @@
+Qiime2 Processing Pipline
+download data from novogene cloud 
+check data: md5sum -c MD5_Lib1_FKDL210003993-1a.txt
+sequencing quality estimate: fastqc Lib1_FKDL210003993-1a_1.clean.fq.gz Lib1_FKDL210003993-1a_2.clean.fq.gz
+create metadata.tsv
+conda activate qiime2
+import data: qiime tools import --type MultiplexedPairedEndBarcodeInSequence --input-path muxed-pe-barcode-in-seq  --output-path multiplexed-seqs.qza 
+demultiplex data: qiime cutadapt demux-paired --i-seqs multiplexed-seqs.qza  --m-forward-barcodes-file metadata.tsv --m-forward-barcodes-column barcode-sequence --p-error-rate 0 --o-per-sample-sequences demutiplexed-seqs.qza --o-untrimmed-sequences untrimmed-seqs.qza --verbose
+cut primer sequences and discard sequences which is no primers found: qiime cutadapt trim-paired --i-demultiplexed-sequences demultiplexed-seqs.qza --p-cores 30 --p-front-f AGRGTTYGATYMTGGCTCAG --p-front-r TGCTGCCTCCCGTAGGAGT --p-error-rate 0 --p-discard-untrimmed --o-trimmed-sequences trimmed-seqs.qza --verbose
+visualize the results of demux: qiime demux summarize --i-data trimmed-seqs.qza --o-visualization trimmed-seqs.qzv
+dada2 denoise and join reads: qiime dada2 denoise-paired --i-demultiplexed-seqs trimmed-seqs.qza --p-trunc-len-f 200 --p-trunc-len-r 200 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30

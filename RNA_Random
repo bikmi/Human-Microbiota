@@ -1,0 +1,5 @@
+unzip -n 2.cleandata.zip
+for i in RanLib*;cp $i/* All
+cd All
+md5sum -c MD5_RanLib*.txt
+fastqc RanLib*.fq.gz

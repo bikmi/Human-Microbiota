@@ -3,3 +3,5 @@ for i in RanLib*;cp $i/* All
 cd All
 md5sum -c MD5_RanLib*.txt
 fastqc RanLib*.fq.gz
+qiime tools import --type EMPPairedEndSequences --input-path emp-paired-end-sequences --output-path emp-paired-end-sequences.qza
+qiime demux emp-paired --m-barcodes-file metadata.txt --m-barcodes-column barcode-sequence --p-rev-comp-mapping-barcodes --i-seqs emp-paired-end-sequences.qza --o-per-sample-sequences demux-full.qza --o-error-correction-details demux-details.qza

@@ -1,0 +1,10 @@
+1. RawData Quality Screen
+md5sum -c *.fq.gz
+fastqc *.fq.gz
+multiqc -d ./ -o multiqc_out
+multiQC results showed first 10 bases of all samples' read1 and read2 fastq have uneven GC content.
+Next step kneaddata equipped trimmomatic remove the bad first 10 bases.
+2. HumanGenomeRemoving
+parallel -j 4 --xapply "kneaddata --input {1} --input {2} -db /lustre/quanzx/DATABASE/HumanGenome/hg37dec_v0.1 --output kneaddata_out -t 20 --run-fastqc-end --trimmomatic /lustre/quanzx/Trimmomatic-0.39 --trimmomatic-options 'ILLUMINACLIP:/TruSeq3-SE.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:50 HEADCROP:10'" ::: *_1.clean.fq.gz ::: *_2.clean.fq.gz
+
+3. MetaPhlan2 Predicate Community Constructions

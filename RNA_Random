@@ -3,5 +3,39 @@ for i in RanLib*;cp $i/* All
 cd All
 md5sum -c MD5_RanLib*.txt
 fastqc RanLib*.fq.gz
-qiime tools import --type EMPPairedEndSequences --input-path emp-paired-end-sequences --output-path emp-paired-end-sequences.qza
-qiime demux emp-paired --m-barcodes-file metadata.txt --m-barcodes-column barcode-sequence --p-rev-comp-mapping-barcodes --i-seqs emp-paired-end-sequences.qza --o-per-sample-sequences demux-full.qza --o-error-correction-details demux-details.qza
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
+qiime demux summarize --i-data paired-end-demux.qza --o-visualization paired-end-demux.qzv
+qiime vsearch join-pairs --i-demultiplexed-seqs paired-end-demux.qza --o-joined-sequences paired-end-demux-joined.qza --p-threads 8 --p-truncqual 20 --p-maxns 0 --p-minovlen 20 --p-maxdiffs 0
+qiime demux summarize --i-data paired-end-demux-joined.qza --o-visualization paired-end-demux-joined.qzv
+qiime quality-filter q-score-joined --i-demux paired-end-demux-joined.qza --o-filtered-sequences paired-end-demux-joined-filtered.qza --o-filter-stats paired-end-demux-joined-filtered-stats.qza
+qiime demux summarize --i-data paired-end-demux-joined-filtered.qza --o-visualization paired-end-demux-joined-filtered.qzv
+unzip -n paired-end-demux-joined-filtered.qza 
+gzip -d -k * 
+for i in *fastq;metaxa2 -i $i -o $i.metaxa --cpu 30 
+/home/server/sina-1.6.1-linux/sina -i Bacteria.fasta --db /home/disk3/zhangruyi/database/SILVA_138/SILVA_138_SSURef_NR99_05_01_20_opt.arb -p 30 -o Bacteria.sinaalign.fasta --fasta-write-dna
+mothur > pcr.seqs(fasta=Bacteria.sinaalign.fasta,start=1006, end=6421, processors=30)
+mothur > screen.seqs(fasta=Bacteria.sinaalign.pcr.fasta,start=1048, end=6217,minlength=250,processors=30)
+for i in *.bacteria.fasta; seqkit seq $i -n -i > $i.ID 
+mkdir V1V2 
+cat *.fastq > all.fastq 
+sed 's/_/:/g' Bacteria.sinaalign.pcr.good.fasta > Bacteria.sinaalign.pcr.good.fasta.1
+parallel -j 30 seqkit grep -f {} Bacteria.sinaalign.pcr.good.fasta.1 -o {}.V.fasta ::: *bacteria.fasta.ID
+for i in *V.fasta;seqkit seq $i -n -i > $i.ID 
+cp *ID.V.fasta.ID V1V2
+cd V1V2 
+cp *ID /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
+cd /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
+gzip -k -d *fq.gz
+cat *_1.clean.fq >all_1.fastq 
+cat *_2.clean.fq >all_2.fastq
+parallel -j 30 seqkit grep -f {} all_1.fq -o {}_1.fq ::: *ID
+parallel -j 30 seqkit grep -f {} all_2.fq -o {}_2.fq ::: *ID
+mkdir Bacteria
+cp *V.fasta.ID_2.fq Bacteria
+cp *V.fasta.ID_1.fq Bacteria
+cd Bacteria
+rename 's/.fastq.metaxa.bacteria.fasta.ID.V.fasta.ID//' * 
+
+
+
+

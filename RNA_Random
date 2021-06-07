@@ -46,6 +46,8 @@ cp *V.fasta.ID_1.fq Bacteria
 cd Bacteria
 rename 's/.fastq.metaxa.bacteria.fasta.ID.V.fasta.ID//' * 
 
+之后的分析参考QIIME2和DADA2的分析
+
 
 
 

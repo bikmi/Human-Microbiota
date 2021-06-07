@@ -1,20 +1,29 @@
+----------------------------------------------------
+#文件的传输错误检测以及初步查看测序质量
 unzip -n 2.cleandata.zip
 for i in RanLib*;cp $i/* All
 cd All
 md5sum -c MD5_RanLib*.txt
 fastqc RanLib*.fq.gz
+----------------------------------------------------
+#导入文件拼接，质控
 qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
 qiime demux summarize --i-data paired-end-demux.qza --o-visualization paired-end-demux.qzv
 qiime vsearch join-pairs --i-demultiplexed-seqs paired-end-demux.qza --o-joined-sequences paired-end-demux-joined.qza --p-threads 8 --p-truncqual 20 --p-maxns 0 --p-minovlen 20 --p-maxdiffs 0
 qiime demux summarize --i-data paired-end-demux-joined.qza --o-visualization paired-end-demux-joined.qzv
 qiime quality-filter q-score-joined --i-demux paired-end-demux-joined.qza --o-filtered-sequences paired-end-demux-joined-filtered.qza --o-filter-stats paired-end-demux-joined-filtered-stats.qza --p-min-quality 20
 qiime demux summarize --i-data paired-end-demux-joined-filtered.qza --o-visualization paired-end-demux-joined-filtered.qzv
+-----------------------------------------------
+#人体微生物的转录本中挑选除细菌的SSU rRNA
 unzip -n paired-end-demux-joined-filtered.qza 
 gzip -d -k * 
 for i in *fastq;metaxa2 -i $i -o $i.metaxa --cpu 30 
 /home/server/sina-1.6.1-linux/sina -i Bacteria.fasta --db /home/disk3/zhangruyi/database/SILVA_138/SILVA_138_SSURef_NR99_05_01_20_opt.arb -p 30 -o Bacteria.sinaalign.fasta --fasta-write-dna
+------------------------------------------------
+#挑选V1-V2区的序列
 mothur > pcr.seqs(fasta=Bacteria.sinaalign.fasta,start=1006, end=6421, processors=30)
 mothur > screen.seqs(fasta=Bacteria.sinaalign.pcr.fasta,start=1048, end=6217,minlength=250,processors=30)
+#获得V1-V2区序列的名字
 for i in *.bacteria.fasta; seqkit seq $i -n -i > $i.ID 
 mkdir V1V2 
 cat *.fastq > all.fastq 
@@ -28,6 +37,7 @@ cd /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
 gzip -k -d *fq.gz
 cat *_1.clean.fq >all_1.fastq 
 cat *_2.clean.fq >all_2.fastq
+#获得V1-V2区序列对应的原始序列
 parallel -j 30 seqkit grep -f {} all_1.fq -o {}_1.fq ::: *ID
 parallel -j 30 seqkit grep -f {} all_2.fq -o {}_2.fq ::: *ID
 mkdir Bacteria

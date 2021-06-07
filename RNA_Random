@@ -7,7 +7,7 @@ qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-pa
 qiime demux summarize --i-data paired-end-demux.qza --o-visualization paired-end-demux.qzv
 qiime vsearch join-pairs --i-demultiplexed-seqs paired-end-demux.qza --o-joined-sequences paired-end-demux-joined.qza --p-threads 8 --p-truncqual 20 --p-maxns 0 --p-minovlen 20 --p-maxdiffs 0
 qiime demux summarize --i-data paired-end-demux-joined.qza --o-visualization paired-end-demux-joined.qzv
-qiime quality-filter q-score-joined --i-demux paired-end-demux-joined.qza --o-filtered-sequences paired-end-demux-joined-filtered.qza --o-filter-stats paired-end-demux-joined-filtered-stats.qza
+qiime quality-filter q-score-joined --i-demux paired-end-demux-joined.qza --o-filtered-sequences paired-end-demux-joined-filtered.qza --o-filter-stats paired-end-demux-joined-filtered-stats.qza --p-min-quality 20
 qiime demux summarize --i-data paired-end-demux-joined-filtered.qza --o-visualization paired-end-demux-joined-filtered.qzv
 unzip -n paired-end-demux-joined-filtered.qza 
 gzip -d -k * 

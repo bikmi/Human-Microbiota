@@ -22,6 +22,23 @@ for i in *fastq;metaxa2 -i $i -o $i.metaxa --cpu 30
 ------------------------------------------------
 #挑选V1-V2区的序列
 mothur > pcr.seqs(fasta=Bacteria.sinaalign.fasta,start=1006, end=6421, processors=30)
+summary.seqs(fasta=Bacteria.sinaalign.fasta)
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1044    1125    1       0       1       1
+2.5%-tile:      1044    5462    146     0       3       33254
+25%-tile:       1046    6217    290     0       5       332537
+Median:         1046    6332    301     0       5       665073
+75%-tile:       1048    6332    307     0       6       997609
+97.5%-tile:     3616    6332    320     0       6       1296891
+Maximum:        6332    6332    358     0       18      1330144
+Mean:   1182.01 6233.16 289.247 0       5.0995
+# of Seqs:      1330144
+
+Output File Names:
+Bacteria.sinaalign.pcr.summary
+
+It took 606 secs to summarize 1330144 sequences.
 mothur > screen.seqs(fasta=Bacteria.sinaalign.pcr.fasta,start=1048, end=6217,minlength=250,processors=30)
 #获得V1-V2区序列的名字
 for i in *.bacteria.fasta; seqkit seq $i -n -i > $i.ID 
@@ -31,7 +48,9 @@ sed 's/_/:/g' Bacteria.sinaalign.pcr.good.fasta > Bacteria.sinaalign.pcr.good.fa
 parallel -j 30 seqkit grep -f {} Bacteria.sinaalign.pcr.good.fasta.1 -o {}.V.fasta ::: *bacteria.fasta.ID
 for i in *V.fasta;seqkit seq $i -n -i > $i.ID 
 cp *ID.V.fasta.ID V1V2
-cd V1V2 
+cd V1V2
+
+for i in *V.fasta.ID;seqkit 
 cp *ID /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
 cd /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
 gzip -k -d *fq.gz

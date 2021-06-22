@@ -49,6 +49,27 @@ parallel -j 30 seqkit grep -f {} Bacteria.sinaalign.pcr.good.fasta.1 -o {}.V.fas
 for i in *V.fasta;seqkit seq $i -n -i > $i.ID 
 cp *ID.V.fasta.ID V1V2
 cd V1V2
+cp ../*ID.V.fasta.degap.fasta . 
+rename 's/.fastq.metaxa.bacteria.fasta.ID.V.fasta.degap//' *
+for i in *fasta;perl fa2fq.pl $i > $i.fastq
+rename 's/.fasta.fastq/.fastq/' * 
+qiime tools import --input-path manifest.txt --output-path joined-demux.qza --type 'SampleData[JoinedSequencesWithQuality]' --input-format SingleEndFastqManifestPhred33V2
+qiime demux summarize --i-data joined-demux.qza --o-visualization joined-demux.qzv
+qiime deblur denoise-16S --i-demultiplexed-seqs joined-demux.qza --p-trim-length 250 --p-sample-stats --o-representative-sequences rep-seqs.qza --o-table table.qza --o-stats deblur-stats.qza
+qiime feature-table summarize --i-table table.qza --o-visualization table.qzv
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.txt
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+qiime deblur visualize-stats --i-deblur-stats deblur-stats.qza --o-visualization deblur-stats.qzv
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/evenness-group-significance.qzv
+qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
+qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
+qiime diversity alpha-rarefaction --i-table table.qza  --i-phylogeny rooted-tree.qza  --p-max-depth 10000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+
+
+
 
 for i in *V.fasta.ID;seqkit 
 cp *ID /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE

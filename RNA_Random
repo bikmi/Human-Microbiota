@@ -67,6 +67,23 @@ qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-result
 qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
 qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
 qiime diversity alpha-rarefaction --i-table table.qza  --i-phylogeny rooted-tree.qza  --p-max-depth 10000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+qiime taxa barplot --i-table table.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+qiime tools export --input-path table.qza --output-path exported-feature-table
+qiime tools export --input-path vsearch-tax.qza  --output-path exported-feature-table
+cd exported-feature-table
+biom convert -i feature-table.biom -o table.tsv --to-tsv
+sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
+biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy
+cd ..
+qiime taxa collapse --i-table table.qza --i-taxonomy vsearch-tax.qza --p-level 7 --o-collapsed-table table-l7.qza 
+qiime tools export --input-path table-l7.qza --output-path exported-l7-table 
+qiime tools export --input-path vsearch-tax.qza  --output-path exported-l7-table 
+cd exported-l7-table
+biom convert -i feature-table.biom -o table.tsv --to-tsv
+sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
+biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy
 
 
 

@@ -1,0 +1,103 @@
+
+mkdir muxed-pe-barcode-in-seq
+mv Lib6_FKDL210003998-1a_1.clean.fq.gz muxed-pe-barcode-in-seq/forward.fastq.gz
+mv Lib6_FKDL210003998-1a_2.clean.fq.gz muxed-pe-barcode-in-seq/reverse.fastq.gz
+qiime tools import --type MultiplexedPairedEndBarcodeInSequence --input-path muxed-pe-barcode-in-seq  --output-path multiplexed-seqs.qza
+qiime cutadapt demux-paired --i-seqs multiplexed-seqs.qza  --m-forward-barcodes-file metadata.tsv --m-forward-barcodes-column barcode-sequence --p-error-rate 0 --o-per-sample-sequences demultiplexed-seqs.qza --o-untrimmed-sequences untrimmed-seqs.qza --verbose
+unzip demultiplexed-seqs.qza
+cd /home/disk2/zry/SkinMicrobiota/PCR/merge/ITS
+mv /home/disk2/zry/SkinMicrobiota/PCR/merge/Lib5/fc4f065d-36d7-4e3c-9392-dfdc9a4ca589/data/*gz .
+mv /home/disk2/zry/SkinMicrobiota/PCR/merge/Lib6/90a89f62-9c50-456d-91f0-330a0969a8bb/data/*gz .
+ls > ls.txt
+-------------------------------------------------------------------------------------------------
+sample-id	forward-absolute-filepath	reverse-absolute-filepath
+S1A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1A_GCTGTACGGATT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1A_GCTGTACGGATT_L001_R2_001.fastq.gz
+S1F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1F_ACGAGACTGATT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1F_ACGAGACTGATT_L001_R2_001.fastq.gz
+S1N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1N_ATCGCACAGTAA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1N_ATCGCACAGTAA_L001_R2_001.fastq.gz
+S1O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1O_TGGTCAACGATA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1O_TGGTCAACGATA_L001_R2_001.fastq.gz
+S1S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1S_TCCCTTGTCTCC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1S_TCCCTTGTCTCC_L001_R2_001.fastq.gz
+S1T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1T_TGCAGTCCTCGA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S1T_TGCAGTCCTCGA_L001_R2_001.fastq.gz
+S2A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2A_TACAGCGCATAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2A_TACAGCGCATAC_L001_R2_001.fastq.gz
+S2F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2F_ATCCTTTGGTTC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2F_ATCCTTTGGTTC_L001_R2_001.fastq.gz
+S2I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2I_AGTCGAACGAGG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2I_AGTCGAACGAGG_L001_R2_001.fastq.gz
+S2N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2N_TGCATACACTGG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2N_TGCATACACTGG_L001_R2_001.fastq.gz
+S2O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2O_GAGCCATCTGTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2O_GAGCCATCTGTA_L001_R2_001.fastq.gz
+S2S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2S_AGCGGAGGTTAG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2S_AGCGGAGGTTAG_L001_R2_001.fastq.gz
+S2T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2T_ACCGGTATGTAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S2T_ACCGGTATGTAC_L001_R2_001.fastq.gz
+S3A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3A_GTAGATCGTGTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3A_GTAGATCGTGTA_L001_R2_001.fastq.gz
+S3F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3F_GAATACCAAGTC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3F_GAATACCAAGTC_L001_R2_001.fastq.gz
+S3I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3I_GATCTGCGATCC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3I_GATCTGCGATCC_L001_R2_001.fastq.gz
+S3N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3N_CCAATACGCCTG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3N_CCAATACGCCTG_L001_R2_001.fastq.gz
+S3S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3S_ACCAGTGACTCA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3S_ACCAGTGACTCA_L001_R2_001.fastq.gz
+S3T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3T_ACCATAGCTCCG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S3T_ACCATAGCTCCG_L001_R2_001.fastq.gz
+S4A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4A_GCAACACCATCC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4A_GCAACACCATCC_L001_R2_001.fastq.gz
+S4F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4F_CAAACAACAGCT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4F_CAAACAACAGCT_L001_R2_001.fastq.gz
+S4I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4I_GTATCTGCGCGT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4I_GTATCTGCGCGT_L001_R2_001.fastq.gz
+S4N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4N_AGTCGTGCACAT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4N_AGTCGTGCACAT_L001_R2_001.fastq.gz
+S4O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4O_CGAGCAATCCTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4O_CGAGCAATCCTA_L001_R2_001.fastq.gz
+S4S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4S_CAGCTCATCAGC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4S_CAGCTCATCAGC_L001_R2_001.fastq.gz
+S4T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4T_GCGATATATCGC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S4T_GCGATATATCGC_L001_R2_001.fastq.gz
+S5A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5A_AGATTGACCAAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5A_AGATTGACCAAC_L001_R2_001.fastq.gz
+S5F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5F_CAAATTCGGGAT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5F_CAAATTCGGGAT_L001_R2_001.fastq.gz
+S5I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5I_TTGCGTTAGCAG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5I_TTGCGTTAGCAG_L001_R2_001.fastq.gz
+S5N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5N_AAGGCGCTCCTT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5N_AAGGCGCTCCTT_L001_R2_001.fastq.gz
+S5O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5O_GCATATGCACTG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5O_GCATATGCACTG_L001_R2_001.fastq.gz
+S5S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5S_CGAGGGAAAGTC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5S_CGAGGGAAAGTC_L001_R2_001.fastq.gz
+S5T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5T_AGTTACGAGCTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S5T_AGTTACGAGCTA_L001_R2_001.fastq.gz
+S6A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6A_GCTGTACGGATT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6A_GCTGTACGGATT_L001_R2_001.fastq.gz
+S6F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6F_ACGAGACTGATT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6F_ACGAGACTGATT_L001_R2_001.fastq.gz
+S6N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6N_ATCGCACAGTAA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6N_ATCGCACAGTAA_L001_R2_001.fastq.gz
+S6O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6O_TGGTCAACGATA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6O_TGGTCAACGATA_L001_R2_001.fastq.gz
+S6S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6S_TCCCTTGTCTCC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6S_TCCCTTGTCTCC_L001_R2_001.fastq.gz
+S6T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6T_ATCACCAGGTGT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S6T_ATCACCAGGTGT_L001_R2_001.fastq.gz
+S7A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7A_TACAGCGCATAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7A_TACAGCGCATAC_L001_R2_001.fastq.gz
+S7F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7F_ATCCTTTGGTTC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7F_ATCCTTTGGTTC_L001_R2_001.fastq.gz
+S7I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7I_AGTCGAACGAGG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7I_AGTCGAACGAGG_L001_R2_001.fastq.gz
+S7N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7N_TGCATACACTGG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7N_TGCATACACTGG_L001_R2_001.fastq.gz
+S7O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7O_AATTGTGTCGGA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7O_AATTGTGTCGGA_L001_R2_001.fastq.gz
+S7S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7S_AGCGGAGGTTAG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7S_AGCGGAGGTTAG_L001_R2_001.fastq.gz
+S7T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7T_ACCGGTATGTAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S7T_ACCGGTATGTAC_L001_R2_001.fastq.gz
+S8A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8A_GTAGATCGTGTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8A_GTAGATCGTGTA_L001_R2_001.fastq.gz
+S8F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8F_GAATACCAAGTC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8F_GAATACCAAGTC_L001_R2_001.fastq.gz
+S8N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8N_CCAATACGCCTG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8N_CCAATACGCCTG_L001_R2_001.fastq.gz
+S8O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8O_CATTATGGCGTG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8O_CATTATGGCGTG_L001_R2_001.fastq.gz
+S8S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8S_TACGAGCCCTAA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8S_TACGAGCCCTAA_L001_R2_001.fastq.gz
+S8T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8T_TAACGTGTGTGC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S8T_TAACGTGTGTGC_L001_R2_001.fastq.gz
+S9A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9A_GCAACACCATCC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9A_GCAACACCATCC_L001_R2_001.fastq.gz
+S9F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9F_CAAACAACAGCT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9F_CAAACAACAGCT_L001_R2_001.fastq.gz
+S9I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9I_GTATCTGCGCGT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9I_GTATCTGCGCGT_L001_R2_001.fastq.gz
+S9N	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9N_AGTCGTGCACAT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9N_AGTCGTGCACAT_L001_R2_001.fastq.gz
+S9O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9O_CGAGCAATCCTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9O_CGAGCAATCCTA_L001_R2_001.fastq.gz
+S9S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9S_CAGCTCATCAGC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9S_CAGCTCATCAGC_L001_R2_001.fastq.gz
+S9T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9T_GCGATATATCGC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S9T_GCGATATATCGC_L001_R2_001.fastq.gz
+S10A	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10A_AGATTGACCAAC_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10A_AGATTGACCAAC_L001_R2_001.fastq.gz
+S10F	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10F_TCGACATCTCTT_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10F_TCGACATCTCTT_L001_R2_001.fastq.gz
+S10I	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10I_TTGCGTTAGCAG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10I_TTGCGTTAGCAG_L001_R2_001.fastq.gz
+S10O	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10O_GCATATGCACTG_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10O_GCATATGCACTG_L001_R2_001.fastq.gz
+S10S	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10S_CACTACGCTAGA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10S_CACTACGCTAGA_L001_R2_001.fastq.gz
+S10T	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10T_AGTTACGAGCTA_L001_R1_001.fastq.gz	/home/disk2/zry/SkinMicrobiota/PCR/merge/ITS/S10T_AGTTACGAGCTA_L001_R2_001.fastq.gz
+--------------------------------------------------------------------------------------------------------------------------------------------------
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
+qiime cutadapt trim-paired --i-demultiplexed-sequences paired-end-demux.qza --p-cores 30 --p-front-f GTAAAAGTCGTAACAAGGTTTC --p-front-r GTTCAAAGAYTCGATGATTCAC --p-error-rate 0 --p-discard-untrimmed --o-trimmed-sequences trimmed-seqs.qza --verbose
+qiime demux summarize --i-data trimmed-seqs.qza --o-visualization trimmed-seqs.qzv
+qiime dada2 denoise-paired --i-demultiplexed-seqs trimmed-seqs.qza --p-trunc-len-f 190 --p-trunc-len-r 200 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
+qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualization stats-dada2.qzv
+qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-dada2.qzv --m-sample-metadata-file metadata.txt
+qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_refs_qiime_ver8_dynamic.qza --i-reference-taxonomy /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_taxonomy_qiime_ver8_dynamic.qza --p-threads 30 --o-classification vsearch-tax.txt
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table-dada2.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/evenness-group-significance.qzv
+qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
+qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
+qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+qiime tools export --input-path table-dada2.qza --output-path exported-feature-table
+qiime tools export --input-path vsearch-tax.qza  --output-path exported-feature-table
+cd exported-feature-table
+biom convert -i feature-table.biom -o table.tsv --to-tsv 
+sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
+biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy

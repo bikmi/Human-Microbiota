@@ -57,7 +57,7 @@ qiime tools import --input-path manifest.txt --output-path joined-demux.qza --ty
 qiime demux summarize --i-data joined-demux.qza --o-visualization joined-demux.qzv
 qiime deblur denoise-16S --i-demultiplexed-seqs joined-demux.qza --p-trim-length 250 --p-sample-stats --o-representative-sequences rep-seqs.qza --o-table table.qza --o-stats deblur-stats.qza
 qiime feature-table summarize --i-table table.qza --o-visualization table.qzv
-qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.txt
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.qza
 qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
 qiime deblur visualize-stats --i-deblur-stats deblur-stats.qza --o-visualization deblur-stats.qzv
 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza

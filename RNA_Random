@@ -17,93 +17,189 @@ qiime demux summarize --i-data paired-end-demux-joined-filtered.qza --o-visualiz
 #人体微生物的转录本中挑选除细菌的SSU rRNA
 unzip -n paired-end-demux-joined-filtered.qza 
 gzip -d -k * 
-for i in *fastq;metaxa2 -i $i -o $i.metaxa --cpu 30 
-/home/server/sina-1.6.1-linux/sina -i Bacteria.fasta --db /home/disk3/zhangruyi/database/SILVA_138/SILVA_138_SSURef_NR99_05_01_20_opt.arb -p 30 -o Bacteria.sinaalign.fasta --fasta-write-dna
-------------------------------------------------
-#挑选V1-V2区的序列
-mothur > pcr.seqs(fasta=Bacteria.sinaalign.fasta,start=1006, end=6421, processors=30)
-summary.seqs(fasta=Bacteria.sinaalign.fasta)
+for i in *fastq;metaxa2 -i $i -o $i.metaxa --cpu 30
+获取bacteria序列的ID
 
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1044    1125    1       0       1       1
-2.5%-tile:      1044    5462    146     0       3       33254
-25%-tile:       1046    6217    290     0       5       332537
-Median:         1046    6332    301     0       5       665073
-75%-tile:       1048    6332    307     0       6       997609
-97.5%-tile:     3616    6332    320     0       6       1296891
-Maximum:        6332    6332    358     0       18      1330144
-Mean:   1182.01 6233.16 289.247 0       5.0995
-# of Seqs:      1330144
+for i in *.bacteria.fasta; seqkit seq $i -n -i > $i.ID
+cp *.ID /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
 
-Output File Names:
-Bacteria.sinaalign.pcr.summary
+parallel -j 30 gzip -d -k {1} ::: *gz 
+cat *_1.clean.fq > all_1.fq 
+cat *_2.clean.fq > all_2.fq
+mothur > fastq.info(fastq=all_1.fq)
+mothur > fastq.info(fastq=all_2.fq)
 
-It took 606 secs to summarize 1330144 sequences.
-mothur > screen.seqs(fasta=Bacteria.sinaalign.pcr.fasta,start=1048, end=6217,minlength=250,processors=30)
-#获得V1-V2区序列的名字
-for i in *.bacteria.fasta; seqkit seq $i -n -i > $i.ID 
-mkdir V1V2 
-cat *.fastq > all.fastq 
-sed 's/_/:/g' Bacteria.sinaalign.pcr.good.fasta > Bacteria.sinaalign.pcr.good.fasta.1
-parallel -j 30 seqkit grep -f {} Bacteria.sinaalign.pcr.good.fasta.1 -o {}.V.fasta ::: *bacteria.fasta.ID
-for i in *V.fasta;seqkit seq $i -n -i > $i.ID 
-cp *ID.V.fasta.ID V1V2
-cd V1V2
-cp ../*ID.V.fasta.degap.fasta . 
-rename 's/.fastq.metaxa.bacteria.fasta.ID.V.fasta.degap//' *
-for i in *fasta;perl fa2fq.pl $i > $i.fastq
-rename 's/.fasta.fastq/.fastq/' * 
-qiime tools import --input-path manifest.txt --output-path joined-demux.qza --type 'SampleData[JoinedSequencesWithQuality]' --input-format SingleEndFastqManifestPhred33V2
-qiime demux summarize --i-data joined-demux.qza --o-visualization joined-demux.qzv
-qiime deblur denoise-16S --i-demultiplexed-seqs joined-demux.qza --p-trim-length 250 --p-sample-stats --o-representative-sequences rep-seqs.qza --o-table table.qza --o-stats deblur-stats.qza
-qiime feature-table summarize --i-table table.qza --o-visualization table.qzv
-qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.qza
+mothur > align.seqs(fasta=all_1.fasta,reference=/home/disk3/zhangruyi/database/SILVA_138/SILVA_138_V1V2_align.fasta,processors=30)
+mothur > align.seqs(fasta=all_2.fasta,reference=/home/disk3/zhangruyi/database/SILVA_138/SILVA_138_V1V2_align.fasta,processors=30)
+Output File Names: 
+all_1.align
+all_1.align.report
+all_1.flip.accn
+
+use in house perl scripts slice aligned fastq sequences
+-----------------------------------------------------
+#! /usr/bin/perl -w
+use warnings;
+#use strict;
+my $usage = qq{$0 input_fastq input_report};
+die "$usage\n" if scalar @ARGV != 2;
+my ($fastq, $report) = @ARGV;
+
+open(FASTQ, $fastq) or die "Can't open $fastq\n";
+open(REPORT, $report) or die "Can't open $report\n";
+
+%hash1 = ();
+%hash2 = ();
+
+while (my $readid=<FASTQ>)
+{
+    chomp ($readid);
+    chomp (my $sequence = <FASTQ>);
+    chomp (my $comment = <FASTQ>);
+    chomp (my $quality = <FASTQ>);
+    @readid = split /\s/, $readid;
+    $hash1{$readid[0]} = $sequence;
+    $hash2{$readid[0]} = $quality;
+}
+close FASTQ;
+
+
+while(my $reportline = <REPORT>)
+{
+	chomp ($reportline);
+	$reportline =~ s/_/:/g;
+	my @reportline = split /\t/, $reportline;
+	my $alignment_length = $reportline[7] - $reportline[8];
+        $reportline[0] = '@' . $reportline[0];
+        if ($alignment_length < 0)
+	{
+    
+    	
+    my $sub_seq = substr $hash1{$reportline[0]}, $reportline[7]-1, abs ($alignment_length)+1;
+    my $sub_quality = substr $hash2{$reportline[0]}, $reportline[7]-1, abs ($alignment_length)+1;
+    print "$reportline[0]\n$sub_seq\n\+\n$sub_quality\n";
+    }
+    else
+    {		
+       my $sub_seq = substr $hash1{$reportline[0]}, $reportline[8]-1, abs ($alignment_length)+1;
+    		my $sub_quality = substr $hash2{$reportline[0]}, $reportline[8]-1, abs ($alignment_length)+1;
+    		print "$reportline[0]\n$sub_seq\n\+\n$sub_quality\n";
+    }
+}
+close REPORT;
+-------------------------------------------------------------------------------
+sed '1d' all_1.align.report > all_1.align.report1
+sed '1d' all_2.align.report > all_2.align.report1
+perl trim_fastq_hash_xiugai.pl all_1.fq all_1.align.report1 > all_1.trim.fq
+perl trim_fastq_hash_xiugai.pl all_2.fq all_2.align.report1 > all_2.trim.fq
+parallel -j 30 "seqkit grep -f {1} all_1.trim.fq > {1}.trim.r1.fq" ::: *ID
+parallel -j 30 "seqkit grep -f {1} all_2.trim.fq > {1}.trim.r2.fq" ::: *ID
+mkdir V1V2_raw
+mv *trim.r1.fq V1V2_raw 
+mv *trim.r2.fq V1V2_raw
+cd V1V2_raw
+rename 's/.fastq.metaxa.bacteria.fasta.ID.trim.r1.fq/_1.fq/' *
+rename 's/.fastq.metaxa.bacteria.fasta.ID.trim.r2.fq/_2.fq/' *
+gzip *
+ls > ls.txt
+
+-----------------------------------------------------------------------------
+create manifest file
+sample-id	forward-absolute-filepath	reverse-absolute-filepath
+S1A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1A_7_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1A_7_L001_R1_001_2.fq.gz
+S1F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1F_8_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1F_8_L001_R1_001_2.fq.gz
+S1I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1I_9_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1I_9_L001_R1_001_2.fq.gz
+S1N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1N_10_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1N_10_L001_R1_001_2.fq.gz
+S1O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1O_11_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1O_11_L001_R1_001_2.fq.gz
+S1S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1S_12_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1S_12_L001_R1_001_2.fq.gz
+S1T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1T_13_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S1T_13_L001_R1_001_2.fq.gz
+S2A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2A_14_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2A_14_L001_R1_001_2.fq.gz
+S2F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2F_15_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2F_15_L001_R1_001_2.fq.gz
+S2I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2I_16_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2I_16_L001_R1_001_2.fq.gz
+S2N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2N_17_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2N_17_L001_R1_001_2.fq.gz
+S2O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2O_18_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2O_18_L001_R1_001_2.fq.gz
+S2S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2S_19_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2S_19_L001_R1_001_2.fq.gz
+S2T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2T_20_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S2T_20_L001_R1_001_2.fq.gz
+S3A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3A_21_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3A_21_L001_R1_001_2.fq.gz
+S3F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3F_22_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3F_22_L001_R1_001_2.fq.gz
+S3I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3I_23_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3I_23_L001_R1_001_2.fq.gz
+S3N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3N_24_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3N_24_L001_R1_001_2.fq.gz
+S3O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3O_25_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3O_25_L001_R1_001_2.fq.gz
+S3S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3S_26_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3S_26_L001_R1_001_2.fq.gz
+S3T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3T_27_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S3T_27_L001_R1_001_2.fq.gz
+S4A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4A_28_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4A_28_L001_R1_001_2.fq.gz
+S4F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4F_29_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4F_29_L001_R1_001_2.fq.gz
+S4I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4I_30_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4I_30_L001_R1_001_2.fq.gz
+S4N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4N_31_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4N_31_L001_R1_001_2.fq.gz
+S4O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4O_32_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4O_32_L001_R1_001_2.fq.gz
+S4S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4S_33_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4S_33_L001_R1_001_2.fq.gz
+S4T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4T_34_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S4T_34_L001_R1_001_2.fq.gz
+S5A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5A_35_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5A_35_L001_R1_001_2.fq.gz
+S5F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5F_36_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5F_36_L001_R1_001_2.fq.gz
+S5I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5I_37_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5I_37_L001_R1_001_2.fq.gz
+S5N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5N_38_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5N_38_L001_R1_001_2.fq.gz
+S5O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5O_39_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5O_39_L001_R1_001_2.fq.gz
+S5S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5S_40_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5S_40_L001_R1_001_2.fq.gz
+S5T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5T_41_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S5T_41_L001_R1_001_2.fq.gz
+S6A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6A_42_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6A_42_L001_R1_001_2.fq.gz
+S6F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6F_43_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6F_43_L001_R1_001_2.fq.gz
+S6I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6I_44_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6I_44_L001_R1_001_2.fq.gz
+S6N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6N_45_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6N_45_L001_R1_001_2.fq.gz
+S6O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6O_46_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6O_46_L001_R1_001_2.fq.gz
+S6S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6S_47_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6S_47_L001_R1_001_2.fq.gz
+S6T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6T_48_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S6T_48_L001_R1_001_2.fq.gz
+S7A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7A_49_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7A_49_L001_R1_001_2.fq.gz
+S7F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7F_50_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7F_50_L001_R1_001_2.fq.gz
+S7I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7I_51_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7I_51_L001_R1_001_2.fq.gz
+S7N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7N_52_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7N_52_L001_R1_001_2.fq.gz
+S7O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7O_53_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7O_53_L001_R1_001_2.fq.gz
+S7S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7S_54_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7S_54_L001_R1_001_2.fq.gz
+S7T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7T_55_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S7T_55_L001_R1_001_2.fq.gz
+S8A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8A_56_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8A_56_L001_R1_001_2.fq.gz
+S8F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8F_57_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8F_57_L001_R1_001_2.fq.gz
+S8I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8I_58_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8I_58_L001_R1_001_2.fq.gz
+S8N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8N_59_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8N_59_L001_R1_001_2.fq.gz
+S8O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8O_60_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8O_60_L001_R1_001_2.fq.gz
+S8S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8S_61_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8S_61_L001_R1_001_2.fq.gz
+S8T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8T_62_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S8T_62_L001_R1_001_2.fq.gz
+S9A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9A_63_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9A_63_L001_R1_001_2.fq.gz
+S9F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9F_64_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9F_64_L001_R1_001_2.fq.gz
+S9I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9I_65_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9I_65_L001_R1_001_2.fq.gz
+S9N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9N_66_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9N_66_L001_R1_001_2.fq.gz
+S9O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9O_67_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9O_67_L001_R1_001_2.fq.gz
+S9S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9S_68_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9S_68_L001_R1_001_2.fq.gz
+S9T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9T_69_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S9T_69_L001_R1_001_2.fq.gz
+S10A	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10A_0_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10A_0_L001_R1_001_2.fq.gz
+S10F	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10F_1_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10F_1_L001_R1_001_2.fq.gz
+S10I	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10I_2_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10I_2_L001_R1_001_2.fq.gz
+S10N	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10N_3_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10N_3_L001_R1_001_2.fq.gz
+S10O	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10O_4_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10O_4_L001_R1_001_2.fq.gz
+S10S	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10S_5_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10S_5_L001_R1_001_2.fq.gz
+S10T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10T_6_L001_R1_001_1.fq.gz	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10T_6_L001_R1_001_2.fq.gz
+----------------------------------------------------------------------
+
+qiime pipline
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2sample-idforward-absolute-filepathreverse-absolute-filepath
+qiime demux summarize --i-data paired-end-demux.qza  --o-visualization paired-end-demux.qzv
+qiime dada2 denoise-paired --i-demultiplexed-seqs paired-end-demux.qza --p-trunc-len-f 200 --p-trunc-len-r 180 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.qza
 qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
-qiime deblur visualize-stats --i-deblur-stats deblur-stats.qza --o-visualization deblur-stats.qzv
-qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
-qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results
+qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qza
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table-dada2.qza --p-sampling-depth 6000 --m-metadata-file metadata.txt --output-dir core-metrics-results
 qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/faith-pd-group-significance.qzv
 qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/evenness-group-significance.qzv
 qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
 qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
-qiime diversity alpha-rarefaction --i-table table.qza  --i-phylogeny rooted-tree.qza  --p-max-depth 10000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
-qiime taxa barplot --i-table table.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
-qiime tools export --input-path table.qza --output-path exported-feature-table
+qiime diversity alpha-rarefaction --i-table table-dada2.qza  --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+qiime tools export --input-path table-dada2.qza --output-path exported-feature-table
 qiime tools export --input-path vsearch-tax.qza  --output-path exported-feature-table
 cd exported-feature-table
 biom convert -i feature-table.biom -o table.tsv --to-tsv
 sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
 biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
-biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy
-cd ..
-qiime taxa collapse --i-table table.qza --i-taxonomy vsearch-tax.qza --p-level 7 --o-collapsed-table table-l7.qza 
-qiime tools export --input-path table-l7.qza --output-path exported-l7-table 
-qiime tools export --input-path vsearch-tax.qza  --output-path exported-l7-table 
-cd exported-l7-table
-biom convert -i feature-table.biom -o table.tsv --to-tsv
-sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
-biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
-biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy 
 
-
-
-
-for i in *V.fasta.ID;seqkit 
-cp *ID /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
-cd /home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE
-gzip -k -d *fq.gz
-cat *_1.clean.fq >all_1.fastq 
-cat *_2.clean.fq >all_2.fastq
-#获得V1-V2区序列对应的原始序列
-parallel -j 30 seqkit grep -f {} all_1.fq -o {}_1.fq ::: *ID
-parallel -j 30 seqkit grep -f {} all_2.fq -o {}_2.fq ::: *ID
-mkdir Bacteria
-cp *V.fasta.ID_2.fq Bacteria
-cp *V.fasta.ID_1.fq Bacteria
-cd Bacteria
-rename 's/.fastq.metaxa.bacteria.fasta.ID.V.fasta.ID//' * 
-
-之后的分析参考QIIME2和DADA2的分析
 
 
 

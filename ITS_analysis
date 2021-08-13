@@ -84,7 +84,7 @@ qiime dada2 denoise-paired --i-demultiplexed-seqs trimmed-seqs.qza --p-trunc-len
 qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualization stats-dada2.qzv
 qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-dada2.qzv --m-sample-metadata-file metadata.txt
 qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
-qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_refs_qiime_ver8_dynamic.qza --i-reference-taxonomy /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_taxonomy_qiime_ver8_dynamic.qza --p-threads 30 --o-classification vsearch-tax.txt
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_refs_qiime_ver8_dynamic.qza --i-reference-taxonomy /home/disk2/DATABAE/UNITE/sh_qiime_release_10.05.2021/sh_taxonomy_qiime_ver8_dynamic.qza --p-threads 30 --o-classification vsearch-tax
 qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
 qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table-dada2.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results

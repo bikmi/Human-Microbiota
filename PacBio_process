@@ -1,84 +1,14 @@
 bedtools bamtofastq -i m64144_210705_100006.ccs.bam -fq sample.fq
 
+trim.seqs(fasta=sample.fasta,qfile=sample.qual,oligos=oligo-all.txt,checkorient=T,bdiffs=2,pdiffs=4,maxambig=0,maxhomop=6,qwindowsize=50,qwindowaverage=35,flip=T,allfiles=T,minlength=1200,maxlength=2000,processors=30)
 
-Group count:
-RNA1-1  15757
-RNA1-1000       5327
-RNA1-2  16112
-RNA1-3  15594
-RNA1-4  14135
-RNA1-4000       11874
-RNA1-5  14269
-RNA1-50 3815
-RNA1-6  16006
-RNA1-6000       11913
-RNA1-7  18243
-RNA10-1 2804
-RNA10-2 10560
-RNA10-3 13078
-RNA10-4 10002
-RNA10-5 14107
-RNA10-6 9314
-RNA10-7 15056
-RNA2-1  4638
-RNA2-100        12332
-RNA2-11000      5421
-RNA2-2  6184
-RNA2-3  12060
-RNA2-4  12889
-RNA2-4000       11778
-RNA2-5  9347
-RNA2-50 11842
-RNA2-6  14306
-RNA2-6000       9549
-RNA2-7  12600
-RNA3-1  18771
-RNA3-2  17639
-RNA3-3  16932
-RNA3-4  14566
-RNA3-5  14085
-RNA3-6  11073
-RNA3-7  12200
-RNA4-1  14412
-RNA4-2  16317
-RNA4-3  13891
-RNA4-4  15154
-RNA4-5  9130
-RNA4-6  17680
-RNA4-7  15370
-RNA5-1  10321
-RNA5-2  1922
-RNA5-3  14945
-RNA5-4  16138
-RNA5-5  16495
-RNA5-6  11585
-RNA5-7  18716
-RNA6-1  14100
-RNA6-2  12505
-RNA6-3  4866
-RNA6-4  14623
-RNA6-5  14727
-RNA6-6  18288
-RNA6-7  12827
-RNA7-1  7201
-RNA7-2  8914
-RNA7-3  11752
-RNA7-4  9517
-RNA7-5  7088
-RNA7-6  12491
-RNA7-7  16677
-RNA8-1  5504
-RNA8-2  10078
-RNA8-3  12465
-RNA8-4  10196
-RNA8-5  9804
-RNA8-6  9104
-RNA8-7  7419
-RNA9-1  4927
-RNA9-2  10499
-RNA9-3  9734
-RNA9-4  10001
-RNA9-5  8805
-RNA9-6  11365
-RNA9-7  1
-Total of all groups is 923732
+make.fastq(fasta=sample.10_1.DNA.fasta,qfile=sample.10_1.DNA.qual)
+
+screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)
+
+
+align.seqs(fasta=sample.RNA9_1.RNA.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T,processors=30)
+
+screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,processors=30)
+ 
+screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)

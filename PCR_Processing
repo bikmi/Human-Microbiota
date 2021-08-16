@@ -14,3 +14,59 @@ visualize: qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualizat
            qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
 rarefaction: qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2-3.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
              qiime diversity alpha-rarefaction --i-table table-dada2-3.qza --i-phylogeny rooted-tree.qza --p-max-depth 10000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv
+-------------------------------------------------
+V1V2 process
+-------------------------------------------------
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest-V1V2.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
+qiime cutadapt trim-paired --i-demultiplexed-sequences paired-end-demux.qza --p-cores 30 --p-front-f AGRGTTYGATYMTGGCTCAG --p-front-r TGCTGCCTCCCGTAGGAGT --p-error-rate 0 --p-discard-untrimmed --o-trimmed-sequences trimmed-seqs.qza --verbose
+qiime demux summarize --i-data trimmed-seqs.qza --o-visualization trimmed-seqs.qzv
+qiime dada2 denoise-paired --i-demultiplexed-seqs trimmed-seqs.qza --p-trunc-len-f 200 --p-trunc-len-r 200 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
+qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualization stats-dada2.qzv
+qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-dada2.qzv --m-sample-metadata-file metadata.txt
+qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table-dada2.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/evenness-group-significance.qzv
+qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
+qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
+qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+qiime tools export --input-path table-dada2.qza --output-path exported-feature-table
+qiime tools export --input-path vsearch-tax.qza  --output-path exported-feature-table
+cd exported-feature-table
+biom convert -i feature-table.biom -o table.tsv --to-tsv 
+sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
+biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy
+
+---------------
+V4
+---------------
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest-V4.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
+qiime cutadapt trim-paired --i-demultiplexed-sequences paired-end-demux.qza --p-cores 30 --p-front-f GTGYCAGCMGCCGCGGTAA --p-front-r GGACTACNVGGGTWTCTAAT
+ --p-error-rate 0 --p-discard-untrimmed --o-trimmed-sequences trimmed-seqs.qza --verbose
+qiime demux summarize --i-data trimmed-seqs.qza --o-visualization trimmed-seqs.qzv
+qiime dada2 denoise-paired --i-demultiplexed-seqs trimmed-seqs.qza --p-trunc-len-f 200 --p-trunc-len-r 200 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
+qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualization stats-dada2.qzv
+qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-dada2.qzv --m-sample-metadata-file metadata.txt
+qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-table table-dada2.qza --p-sampling-depth 3000 --m-metadata-file metadata.txt --output-dir core-metrics-results
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/faith_pd_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+qiime diversity alpha-group-significance --i-alpha-diversity core-metrics-results/evenness_vector.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/evenness-group-significance.qzv
+qiime diversity beta-group-significance --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza --m-metadata-file metadata.txt --m-metadata-column treatment-group --o-visualization core-metrics-results/unweighted-unifrac-body-site-significance.qzv --p-pairwise
+qiime emperor plot --i-pcoa core-metrics-results/unweighted_unifrac_pcoa_results.qza --m-metadata-file metadata.txt --o-visualization core-metrics-results/unweighted-unifrac-emperor-days-since-experiment-start.qzv
+qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.txt --o-visualization alpha-rarefaction.qzv
+qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+qiime tools export --input-path table-dada2.qza --output-path exported-feature-table
+qiime tools export --input-path vsearch-tax.qza  --output-path exported-feature-table
+cd exported-feature-table
+biom convert -i feature-table.biom -o table.tsv --to-tsv 
+sed -i -e '1 s/Feature ID/#OTUID/' -e '1 s/Taxon/taxonomy/' -e '1 s/Consensus/confidence/' taxonomy.tsv
+biom add-metadata -i feature-table.biom -o table-with-taxonomy.biom --observation-metadata-fp taxonomy.tsv --sc-separated taxonomy
+biom convert -i table-with-taxonomy.biom -o OTU_Table.txt --to-tsv --header-key taxonomy

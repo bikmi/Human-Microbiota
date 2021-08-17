@@ -9,6 +9,19 @@ screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignr
 
 align.seqs(fasta=sample.RNA9_1.RNA.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T,processors=30)
 
+summary.seqs(fasta=sample.trim.align,processors=30)
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        -1      -1      0       0       1       1
+2.5%-tile:      1044    42554   1350    0       5       41296
+25%-tile:       1044    42558   1365    0       5       412960
+Median:         1044    42558   1391    0       5       825920
+75%-tile:       1044    43116   1448    0       6       1238880
+97.5%-tile:     1044    43116   1478    0       6       1610544
+Maximum:        43116   43116   1965    0       6       1651839
+Mean:   1273.18 42686.6 1397.13 0       5.46344
+# of Seqs:      1651839
+
 screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,processors=30)
  
 screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)

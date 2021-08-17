@@ -9,4 +9,7 @@ parallel -j 4 --xapply "kneaddata --input {1} --input {2} -db /lustre/quanzx/DAT
 
 3. MetaPhlan2 Predicate Community Constructions
 cat *unmatched_1/2.fastq and *paired_1/2.fastq > merged.fasta, merge.fasta used to conduct following divrsity analysis.
+conda activate HumanMicrobiome
+
+parallel -j 30 "metaphlan {1} --nproc 1 --input_type bowtie2out --ignore_eukaryotes --tax_lev g -o {1}.genus_profiles.txt" ::: *_clean.kneaddata.fastq.bowtie2.bz2
 

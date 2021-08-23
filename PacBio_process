@@ -1,10 +1,74 @@
+/home/server/mothur/mothur 
+
+
+
+upstream analysis
+-------------------------------------------------------------------------------------------------------------------
+1. transfer *bam to fastq
 bedtools bamtofastq -i m64144_210705_100006.ccs.bam -fq sample.fq
-
+2. demultiplex barcoded samples and quality control 
 trim.seqs(fasta=sample.fasta,qfile=sample.qual,oligos=oligo-all.txt,checkorient=T,bdiffs=2,pdiffs=4,maxambig=0,maxhomop=6,qwindowsize=50,qwindowaverage=35,flip=T,allfiles=T,minlength=1200,maxlength=2000,processors=30)
-
-make.fastq(fasta=sample.10_1.DNA.fasta,qfile=sample.10_1.DNA.qual)
-
+3. combined demultplexed *fasta, *qual, and *groups
+4. calculate seqs number
+summary.seqs(fasta=test2.fasta,name=test2.names)
+5. unique same sequences and record sequences number
+unique.seqs(fasta=test2.fasta, name=test2.names)
+6. calculate seqs number
+summary.seqs(fasta=test2.unique.fasta, name=test2.unique.names)
+7. align sequences to silva 138 reference
+align.seqs(fasta=test2.unique.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T,processors=30)
+8. calculate seqs number, start site and end site
+summary.seqs(fasta=test2.unique.align,name=test2.unique.names)
+9. screen sequenences boundary out of the real site  
+screen.seqs(fasta=test2.unique.align,start=1044,end=42554,minscore=90,minsim=90,alignreport=test2.unique.align.report,processors=30,group=test2.groups,name=test2.unique.names)
+10. calculate seqs number
+summary.seqs(fasta=test2.unique.good.align, name=test2.unique.good.names)
+11. remove common gaps
+filter.seqs(fasta=test2.unique.good.align)
+12. unique same sequences and record sequences number
+unique.seqs(fasta=test2.unique.good.filter.fasta, name=test2.unique.good.names)
+13. decrease error ratio and output ASV files
+pre.cluster(fasta=test2.unique.good.filter.unique.fasta, name=test2.unique.good.filter.names, group=test2.good.groups, diffs=15)
+14. calculate seqs number and asv distribution
+summary.seqs(fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table)
+15. remove bad sequences
 screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)
+16. recongnize denovo chimeras
+chimera.uchime(fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table)
+17. remove chimeras from upstair
+remove.seqs(accnos=test2.unique.good.filter.unique.precluster.denovo.uchime.accnos, fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table, dups=T)
+18. pre.cluster representation sequences classification
+classify.seqs(fasta=test2.unique.good.filter.unique.precluster.pick.fasta, count=test2.unique.good.filter.unique.precluster.pick.count_table, reference=/home/disk2/DATABAE/QIIME2/silva-138-99-seqs.fasta, taxonomy=/home/disk2/DATABAE/QIIME2/silva-138-99.tax, cutoff=80,processors=30)
+19. make classify OTU table
+make.shared(count=test2.unique.good.filter.unique.precluster.pick.count_table)
+20. output ASV classification table 
+classify.otu(list=test2.unique.good.filter.unique.precluster.pick.ASV.list,count=test2.unique.good.filter.unique.precluster.pick.count_table,taxonomy=test2.unique.good.filter.unique.precluster.pick.silva_138_99.wang.taxonomy,label=asv)
+21. make qiime suited biom file
+cut -f 2,4- test2.unique.good.filter.unique.precluster.pick.ASV.shared | awk '
+{
+    for (i=1; i<=NF; i++)  {
+        a[NR,i] = $i
+    }
+}
+NF>p { p = NF }
+END {
+    for(j=1; j<=p; j++) {
+        str=a[1,j]
+        for(i=2; i<=NR; i++){
+            str=str" "a[i,j];
+        }
+        print str
+    }
+}' > table.txt
+
+sed -i 's/\s/\t/g' table.txt
+biom convert -i table.txt -o mothur_shared.biom --table-type="OTU table" --to-hdf5
+qiime tools import --type 'FeatureTable[Frequency]' --input-path mothur_shared.biom --output-path frequency_table.qza --input-format BIOMV210Format
+qiime tools import --type 'FeatureData[Taxonomy]' --input-path taxonomy.txt --output-path taxonomy_table.qza --input-format TSVTaxonomyFormat
+-------------------------------------------------------------------------------------------------------------------
+then mothur results can be processed in QIIME2
+-------------------------------------------------------------------------------------------------------------------
+downstream analysis
 
 
 align.seqs(fasta=sample.RNA9_1.RNA.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T,processors=30)

@@ -8,7 +8,9 @@ upstream analysis
 bedtools bamtofastq -i m64144_210705_100006.ccs.bam -fq sample.fq
 2. demultiplex barcoded samples and quality control 
 trim.seqs(fasta=sample.fasta,qfile=sample.qual,oligos=oligo-all.txt,checkorient=T,bdiffs=2,pdiffs=4,maxambig=0,maxhomop=6,qwindowsize=50,qwindowaverage=35,flip=T,allfiles=T,minlength=1200,maxlength=2000,processors=30)
-3. combined demultplexed *fasta, *qual, and *groups
+3. combined demultplexed *fasta, *qual, and *groups; prepare namses file
+cut -f 1 sample.DNA.groups > sample.DNA.accnos
+paste sample.DNA.accnos sample.DNA.accnos > sample.DNA.names
 4. calculate seqs number
 summary.seqs(fasta=test2.fasta,name=test2.names)
 5. unique same sequences and record sequences number

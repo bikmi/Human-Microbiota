@@ -42,7 +42,7 @@ classify.seqs(fasta=test2.unique.good.filter.unique.precluster.pick.fasta, count
 19. make classify OTU table
 make.shared(count=test2.unique.good.filter.unique.precluster.pick.count_table)
 20. output ASV classification table 
-classify.otu(list=test2.unique.good.filter.unique.precluster.pick.ASV.list,count=test2.unique.good.filter.unique.precluster.pick.count_table,taxonomy=test2.unique.good.filter.unique.precluster.pick.silva_138_99.wang.taxonomy,label=asv)
+classify.otu(list=test2.unique.good.filter.unique.precluster.pick.ASV.list,count=test2.unique.good.filter.unique.precluster.pick.count_table,taxonomy=test2.unique.good.filter.unique.precluster.pick.silva_138_99.wang.taxonomy,label=ASV)
 21. make qiime suited biom file
 cut -f 2,4- test2.unique.good.filter.unique.precluster.pick.ASV.shared | awk '
 {

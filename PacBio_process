@@ -64,6 +64,10 @@ END {
 sed -i 's/\s/\t/g' table.txt
 biom convert -i table.txt -o mothur_shared.biom --table-type="OTU table" --to-hdf5
 qiime tools import --type 'FeatureTable[Frequency]' --input-path mothur_shared.biom --output-path frequency_table.qza --input-format BIOMV210Format
+cut -f 1,3 sample.DNA.unique.good.filter.unique.precluster.pick.ASV.ASV.cons.taxonomy | paste > tax.tsv
+sed 's/OTU\tTaxonomy/Feature ID\tTaxon/' tax.tsv > taxonomy.tsv
+
+
 qiime tools import --type 'FeatureData[Taxonomy]' --input-path taxonomy.txt --output-path taxonomy_table.qza --input-format TSVTaxonomyFormat
 -------------------------------------------------------------------------------------------------------------------
 then mothur results can be processed in QIIME2

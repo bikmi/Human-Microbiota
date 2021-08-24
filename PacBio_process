@@ -33,8 +33,6 @@ unique.seqs(fasta=test2.unique.good.filter.fasta, name=test2.unique.good.names)
 pre.cluster(fasta=test2.unique.good.filter.unique.fasta, name=test2.unique.good.filter.names, group=test2.good.groups, diffs=15)
 14. calculate seqs number and asv distribution
 summary.seqs(fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table)
-15. remove bad sequences
-screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)
 16. recongnize denovo chimeras
 chimera.uchime(fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table)
 17. remove chimeras from upstair

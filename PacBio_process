@@ -88,6 +88,7 @@ sed -n '2p' sample.DNA.unique.good.filter.unique.precluster.pick.ASV.list|cut -f
 paste sample.asv.accnos sample.otu.accnos > sample.asv.map
 mothur > rename.seqs(fasta=sample.DNA.unique.good.filter.unique.precluster.pick.fasta,map=sample.asv.map)
 seqkit seq -g sample.DNA.unique.good.filter.unique.precluster.pick.renamed.fasta -o sample.rep.fasta
+qiime tools import --input-path sample.rep.fasta --output-path sequences.qza --type 'FeatureData[Sequence]'
 qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -95,22 +96,111 @@ then mothur results can be processed in QIIME2
 -------------------------------------------------------------------------------------------------------------------
 downstream analysis
 
+##########
+RNA part##
+##########
 
-align.seqs(fasta=sample.RNA9_1.RNA.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T,processors=30)
+Software dependent: metaxa2, mothur and QIIME2
 
-summary.seqs(fasta=sample.trim.align,processors=30)
+1. transfer *bam to fastq
+bedtools bamtofastq -i m64144_210705_100006.ccs.bam -fq sample.fq
+2. demultiplex barcoded samples and quality control
+trim.seqs(fasta=sample.fasta,qfile=sample.qual,oligos=oligo-all.txt,checkorient=T,bdiffs=2,pdiffs=4,maxambig=0,maxhomop=6,qwindowsize=50,qwindowaverage=35,flip=T,allfiles=T,minlength=1200,maxlength=2000,processors=30)
+3. make fastq
+make.fastq(fasta=sample.10_*.DNA.fasta,qfile=sample.10_*.DNA.qual)
+4. metaxa assign SSU rRNA sequences fastq and pick bacteria fastq
+for i in *fastq;metaxa2 -i $i -o $i.metaxa -x T --cpu 30 
+for i in *results;awk '$3=="B" {print $1}' $i > $i.bacteria.names
+parallel -j 32 "seqkit grep -f {1}.metaxa.extraction.results.bacteria.names {1} -o {1}.bacteria.fastq" ::: *RNA.fastq
+parallel -j 32 "seqkit fq2fa {1} -o {1}.fasta" ::: *bacteria.fastq
+ls|grep 'fastq.fasta' > file.list
+cat file.list| tr "\n" "-" > file_list.txt
+5. make group file for mothur process
+mothur > make.group(fasta=sample.RNA10_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA10_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA1_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA2_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA3_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA4_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA5_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA6_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA7_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA8_7.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_1.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_2.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_3.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_4.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_5.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_6.RNA.fastq.bacteria.fastq.fasta-sample.RNA9_7.RNA.fastq.bacteria.fastq.fasta,groups=RNA10_1-RNA10_2-RNA10_3-RNA10_4-RNA10_5-RNA10_6-RNA10_7-RNA1_1-RNA1_2-RNA1_3-RNA1_4-RNA1_5-RNA1_6-RNA1_7-RNA2_1-RNA2_2-RNA2_3-RNA2_4-RNA2_5-RNA2_6-RNA2_7-RNA3_1-RNA3_2-RNA3_3-RNA3_4-RNA3_5-RNA3_6-RNA3_7-RNA4_1-RNA4_2-RNA4_3-RNA4_4-RNA4_5-RNA4_6-RNA4_7-RNA5_1-RNA5_2-RNA5_3-RNA5_4-RNA5_5-RNA5_6-RNA5_7-RNA6_1-RNA6_2-RNA6_3-RNA6_4-RNA6_5-RNA6_6-RNA6_7-RNA7_1-RNA7_2-RNA7_3-RNA7_4-RNA7_5-RNA7_6-RNA7_7-RNA8_1-RNA8_2-RNA8_3-RNA8_4-RNA8_5-RNA8_6-RNA8_7-RNA9_1-RNA9_2-RNA9_3-RNA9_4-RNA9_5-RNA9_6-RNA9_7)
 
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        -1      -1      0       0       1       1
-2.5%-tile:      1044    42554   1350    0       5       41296
-25%-tile:       1044    42558   1365    0       5       412960
-Median:         1044    42558   1391    0       5       825920
-75%-tile:       1044    43116   1448    0       6       1238880
-97.5%-tile:     1044    43116   1478    0       6       1610544
-Maximum:        43116   43116   1965    0       6       1651839
-Mean:   1273.18 42686.6 1397.13 0       5.46344
-# of Seqs:      1651839
+6. 
+summary.seqs(fasta=RNA.fasta,name=RNA.names)
+7. 
+unique.seqs(fasta=RNA.fasta, name=RNA.names)
+8. 
+summary.seqs(fasta=RNA.unique.fasta, name=RNA.unique.names)
+9. 
+align.seqs(fasta=RNA.unique.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T)
+10. 
+summary.seqs(fasta=RNA.unique.align,name=RNA.unique.names)
 
-screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,processors=30)
- 
-screen.seqs(fasta=sample.RNA9_1.RNA.align,end=42546,minscore=90,minsim=90,alignreport=sample.RNA9_1.RNA.align.report,processors=30)
+Using 32 processors.
+
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1041	1046	2	0	1	1
+2.5%-tile:	1044	42554	1347	0	5	21554
+25%-tile:	1044	42558	1361	0	5	215535
+Median: 	1044	42558	1367	0	6	431069
+75%-tile:	1044	42558	1390	0	6	646603
+97.5%-tile:	1044	42559	1398	0	7	840584
+Maximum:	43115	43116	1999	0	30	862137
+Mean:	1115	42542	1369	0	5
+# of unique seqs:	830139
+total # of seqs:	862137
+
+It took 239 secs to summarize 862137 sequences.
+
+Output File Names:
+RNA.unique.summary
+11. screen sequences according upstep results
+screen.seqs(fasta=RNA.unique.align,start=1044,end=42554,minscore=90,minsim=90,alignreport=RNA.unique.align.report,group=RNA.groups,name=RNA.unique.names)
+12. cut off sequences beyound Primer 1390R start site
+pcr.seqs(fasta=RNA.unique.good.align,start=1044,end=41794,name=RNA.unique.good.names)
+13. 
+summary.seqs(fasta=RNA.unique.good.pcr.align, name=RNA.unique.good.names)
+14. 
+filter.seqs(fasta=RNA.unique.good.pcr.align)
+15. 
+unique.seqs(fasta=RNA.unique.good.pcr.filter.fasta, name=RNA.unique.good.names)
+16. 
+pre.cluster(fasta=RNA.unique.good.pcr.filter.unique.fasta, name=RNA.unique.good.pcr.filter.names, group=RNA.good.groups, diffs=15)
+17. 
+summary.seqs(fasta=RNA.unique.good.pcr.filter.unique.precluster.fasta, count=RNA.unique.good.pcr.filter.unique.precluster.count_table)
+18. 
+chimera.uchime(fasta=RNA.unique.good.pcr.filter.unique.precluster.fasta, count=RNA.unique.good.pcr.filter.unique.precluster.count_table)
+19. 
+remove.seqs(accnos=RNA.unique.good.pcr.filter.unique.precluster.denovo.uchime.accnos, fasta=RNA.unique.good.pcr.filter.unique.precluster.fasta, count=RNA.unique.good.pcr.filter.unique.precluster.count_table, dups=T)
+20. 
+classify.seqs(fasta=RNA.unique.good.pcr.filter.unique.precluster.pick.fasta, count=RNA.unique.good.pcr.filter.unique.precluster.pick.count_table, reference=/home/disk2/DATABAE/QIIME2/silva-138-99-seqs.fasta, taxonomy=/home/disk2/DATABAE/QIIME2/silva-138-99.tax, cutoff=80)
+--------------------------------------------------
+as mothur describe in Miseq/454 SOP, otu table can be produced when i follow next steps. However, i found there is a bug in make.shared
+--------------------------------------------------
+21. 
+make.shared(count=RNA.unique.good.pcr.filter.unique.precluster.pick.count_table)####this command produce right list file,but wrong *shared file.
+22. 
+classify.otu(list=RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.list,count=RNA.unique.good.pcr.filter.unique.precluster.pick.count_table,taxonomy=RNA.unique.good.pcr.filter.unique.precluster.pick.silva_138_99.wang.taxonomy,label=ASV)
+--------------------------------------------------
+Alternatively, i use follow step achieve final OTU_table
+--------------------------------------------------
+sed -n '1p' RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.list|cut -f 3- | sed 's/\t/\n/g' > sample.otu.accnos
+
+sed -n '2p' RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.list|cut -f 3- | sed 's/\t/\n/g' > sample.asv.accnos
+
+paste sample.asv.accnos sample.otu.accnos > sample.asv.map
+
+awk 'NR==FNR{huty[$1]=$2;next}NR>FNR{if($1 in huty){print huty[$1] "\t" $0} else {print "OTU ID" "\t" $0}}' sample.asv.map RNA.unique.good.pcr.filter.unique.precluster.pick.full.count_table | cut -f 1,4- > OTU_table.tsv
+
+biom convert -i OTU_table.tsv -o mothur_shared.biom --table-type="OTU table" --to-hdf5 
+
+qiime tools import --type 'FeatureTable[Frequency]' --input-path mothur_shared.biom --output-path frequency_table.qza --input-format BIOMV210Format
+
+cut -f 1,3 RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.ASV.cons.taxonomy | paste > tax.tsv
+
+sed 's/OTU\tTaxonomy/Feature ID\tTaxon/' tax.tsv > taxonomy.tsv
+
+qiime tools import --type 'FeatureData[Taxonomy]' --input-path taxonomy.txt --output-path taxonomy_table.qza --input-format TSVTaxonomyFormat
+
+qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+
+make represent sequences
+
+rename.seqs(fasta=sample.DNA.unique.good.filter.unique.precluster.pick.fasta,map=sample.asv.map)
+
+seqkit seq -g sample.DNA.unique.good.filter.unique.precluster.pick.renamed.fasta -o sample.rep.fasta
+
+qiime tools import --input-path sample.rep.fasta --output-path sequences.qza --type 'FeatureData[Sequence]'

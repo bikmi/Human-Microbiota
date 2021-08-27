@@ -54,8 +54,11 @@ chimera.uchime(fasta=test2.unique.good.filter.unique.precluster.fasta, count=tes
 remove.seqs(accnos=test2.unique.good.filter.unique.precluster.denovo.uchime.accnos, fasta=test2.unique.good.filter.unique.precluster.fasta, count=test2.unique.good.filter.unique.precluster.count_table, dups=T)
 18. pre.cluster representation sequences classification
 classify.seqs(fasta=test2.unique.good.filter.unique.precluster.pick.fasta, count=test2.unique.good.filter.unique.precluster.pick.count_table, reference=/home/disk2/DATABAE/QIIME2/silva-138-99-seqs.fasta, taxonomy=/home/disk2/DATABAE/QIIME2/silva-138-99.tax, cutoff=80,processors=30)
+--------------------------------------------------
+as mothur describe in Miseq/454 SOP, otu table can be produced when i follow next steps. However, i found there is a bug in make.shared
+--------------------------------------------------
 19. make classify OTU table
-make.shared(count=test2.unique.good.filter.unique.precluster.pick.count_table)
+make.shared(count=test2.unique.good.filter.unique.precluster.pick.count_table)####this command produce right list file,but wrong *shared file.
 20. output ASV classification table 
 classify.otu(list=test2.unique.good.filter.unique.precluster.pick.ASV.list,count=test2.unique.good.filter.unique.precluster.pick.count_table,taxonomy=test2.unique.good.filter.unique.precluster.pick.silva_138_99.wang.taxonomy,label=ASV)
 21. make qiime suited biom file
@@ -90,7 +93,13 @@ mothur > rename.seqs(fasta=sample.DNA.unique.good.filter.unique.precluster.pick.
 seqkit seq -g sample.DNA.unique.good.filter.unique.precluster.pick.renamed.fasta -o sample.rep.fasta
 qiime tools import --input-path sample.rep.fasta --output-path sequences.qza --type 'FeatureData[Sequence]'
 qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv 
-
+--------------------------------------------------
+Alternatively, i use follow step achieve final OTU_table
+--------------------------------------------------
+awk 'NR==FNR{huty[$1]=$2;next}NR>FNR{if($1 in huty){print huty[$1] "\t" $0} else {print "OTU ID" "\t" $0}}' sample.asv.map sample.DNA.unique.good.filter.unique.precluster.pick.full.count_table | cut -f 1,4- > OTU_table.tsv
+biom convert -i OTU_table.tsv -o mothur_shared.biom --table-type="OTU table" --to-hdf5
+qiime tools import --type 'FeatureTable[Frequency]' --input-path mothur_shared.biom --output-path frequency_table.qza --input-format BIOMV210Format
+qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
 -------------------------------------------------------------------------------------------------------------------
 then mothur results can be processed in QIIME2
 -------------------------------------------------------------------------------------------------------------------
@@ -182,6 +191,8 @@ sed -n '1p' RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.list|cut -f 3-
 sed -n '2p' RNA.unique.good.pcr.filter.unique.precluster.pick.ASV.list|cut -f 3- | sed 's/\t/\n/g' > sample.asv.accnos
 
 paste sample.asv.accnos sample.otu.accnos > sample.asv.map
+
+count.seqs(count=sample.asv.map RNA.unique.good.pcr.filter.unique.precluster.pick.count_table,compress=f)
 
 awk 'NR==FNR{huty[$1]=$2;next}NR>FNR{if($1 in huty){print huty[$1] "\t" $0} else {print "OTU ID" "\t" $0}}' sample.asv.map RNA.unique.good.pcr.filter.unique.precluster.pick.full.count_table | cut -f 1,4- > OTU_table.tsv
 

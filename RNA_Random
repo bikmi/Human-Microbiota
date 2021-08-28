@@ -179,7 +179,7 @@ S10T	/home/disk2/zry/SkinMicrobiota/RNA/Random/MERGE/V1V2_raw/S10T_6_L001_R1_001
 ----------------------------------------------------------------------
 
 qiime pipline
-qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2sample-idforward-absolute-filepathreverse-absolute-filepath
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
 qiime demux summarize --i-data paired-end-demux.qza  --o-visualization paired-end-demux.qzv
 qiime dada2 denoise-paired --i-demultiplexed-seqs paired-end-demux.qza --p-trunc-len-f 200 --p-trunc-len-r 180 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
 qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax.qza

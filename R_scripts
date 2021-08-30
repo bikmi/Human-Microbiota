@@ -1,0 +1,47 @@
+stack_plot
+-----------------------------------------------------------
+setwd("D:/Phenotype/Data/PacBio/20210719/mothur/ALLRNA")
+tax=read.table("Phylum_table.txt", header=T, sep="\t")
+metadata=read.table("metadata_amplicon.txt", header=T, sep="\t")
+tax
+metadata
+library(reshape2)
+tax_melt<-melt(tax, id='TaxID')
+tax_melt
+names(tax_melt)[2]='sampleid'
+tax_melt
+data_frame=merge(tax_melt, metadata, by='sampleid')
+data_frame
+library(ggplot2)
+library(RColorBrewer)
+colourCount = length(unique(data_frame$TaxID))
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+
+stack_plot=ggplot(data_frame, aes(x=sampleid, fill=TaxID,y=value))+
+  geom_col(position='fill') +
+  labs(x='Samples', y='Relative Abundance (%)')+
+  scale_y_continuous(expand=c(0, 0))+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  facet_wrap(~ treatmentgroup,scales = 'free_x',ncol = 7)+
+  scale_fill_manual(values = getPalette(colourCount))
+stack_plot
+ggsave(filename="stack.pdf", plot=stack_plot,
+       height=15, width=30, units="cm")
+       
+--------------------------------------------------  
+setwd("D:/Phenotype/Data/PacBio/20210719/mothur/DNA")
+library(devtools)
+library("amplicon")
+library(RColorBrewer)
+
+metadata=read.table("metadata_amplicon.txt", header=T, row.names=1, sep="\t", comment.char="", stringsAsFactors=F)
+metadata
+tax=read.table("genus_table.txt", header=T, row.names=1, sep="\t", comment.char="", stringsAsFactors=F)
+tax
+
+p=tax_stackplot(tax, metadata,groupID = "treatmentgroup",style="sample",topN=10)
+
+p
+p=p + scale_fill_brewer(palette="Set3")
+p
+

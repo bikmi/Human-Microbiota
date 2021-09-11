@@ -1,0 +1,40 @@
+metaRNA 
+path=/home/disk2/zry/SkinMicrobiota/metaRNA/
+cd FS_FKDL210220520-1a
+md5sum -c MD5.txt
+1. rcorrector fix sequencing error
+##install rcorrector  
+   conda activate HumanMicrobiome 
+   install rcorrector
+   conda install rcorrector 
+ run_rcorrector.pl -1 FS_FKDL210220520-1a_1.fq.gz -2 FS_FKDL210220520-1a_2.fq.gz -t 32
+##check point
+zcat FS_FKDL210220520-1a_1.cor.fq.gz| wc -l  
+zcat FS_FKDL210220520-1a_2.cor.fq.gz| wc -l 
+2. remove unfixed paired-reads and remove cor marker of read ID
+##git clone  https://github.com/harvardinformatics/TranscriptomeAssemblyTools.git
+  unzip TranscriptomeAssemblyTools-master.zip
+  chmod 775 FilterUncorrectabledPEfastq.py
+  python2.7  FilterUncorrectabledPEfastq.py -1 FS_FKDL210220520-1a_1.cor.fq.gz -2 FS_FKDL210220520-1a_2.cor.fq.gz -s FS
+3. remove illumina sequencing adaptors
+wget https://github.com/FelixKrueger/TrimGalore/archive/0.6.7.zip
+unzip 0.6.7.zip
+/home/server/TrimGalore-0.6.7/trim_galore --paired --retain_unpaired --phred33 --output_dir trimmed_reads --length 36 -q 5 --stringency 1 -e 0.1 unfixrm_FS_FKDL210220520-1a_1.cor.fq unfixrm_FS_FKDL210220520-1a_2.cor.fq -j 30
+4. remove rRNA using sortmerna
+conda install sortmerna
+download rRNA database from https://github.com/biocore/sortmerna/tree/master/data/rRNA_databases
+sortmerna --index 2 --threads 30 \
+--ref /home/disk2/DATABAE/sortmerna/silva-bac-16s-id90.fasta \
+--ref /home/disk2/DATABAE/sortmerna/silva-bac-23s-id98.fasta \
+--ref /home/disk2/DATABAE/sortmerna/silva-arc-16s-id95.fasta \
+--ref /home/disk2/DATABAE/sortmerna/silva-arc-23s-id98.fasta \
+--ref /home/disk2/DATABAE/sortmerna/silva-euk-18s-id95.fasta \
+--ref /home/disk2/DATABAE/sortmerna/silva-euk-28s-id98.fasta \
+--ref /home/disk2/DATABAE/sortmerna/rfam-5s-database-id98.fasta \
+--ref /home/disk2/DATABAE/sortmerna/rfam-5.8s-database-id98.fasta \
+--workdir ./ \
+--reads NR1.fq.gz \
+--reads NR2.fq.gz \
+--aligned "NR/N_rRNA" --other "NR/N_clean" --paired_in --fastx --out2
+5. denovo RNA-sequencing 
+

@@ -37,4 +37,5 @@ sortmerna --index 2 --threads 30 \
 --reads NR2.fq.gz \
 --aligned "NR/N_rRNA" --other "NR/N_clean" --paired_in --fastx --out2
 5. denovo RNA-sequencing 
-
+cd NR 
+Trinity --seqType fq --max_memory 50G --left N_clean_fwd.fq  --right N_clean_rev.fq --CPU 20

@@ -19,7 +19,7 @@ zcat FS_FKDL210220520-1a_2.cor.fq.gz| wc -l
 3. remove illumina sequencing adaptors
 wget https://github.com/FelixKrueger/TrimGalore/archive/0.6.7.zip
 unzip 0.6.7.zip
-/home/server/TrimGalore-0.6.7/trim_galore --paired --retain_unpaired --phred33 --output_dir trimmed_reads --length 36 -q 20 --stringency 1 -e 0.1 unfixrm_FS_FKDL210220520-1a_1.cor.fq unfixrm_FS_FKDL210220520-1a_2.cor.fq -j 30
+/home/server/TrimGalore-0.6.7/trim_galore --paired --retain_unpaired --phred33 --output_dir trimmed_reads --length 70 -q 20 --stringency 1 -e 0.1 unfixrm_FS_FKDL210220520-1a_1.cor.fq unfixrm_FS_FKDL210220520-1a_2.cor.fq
 4. remove rRNA using sortmerna
 conda install sortmerna
 download rRNA database from https://github.com/biocore/sortmerna/tree/master/data/rRNA_databases

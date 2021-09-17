@@ -1,3 +1,5 @@
+Read-based analysis
+
 metaRNA 
 path=/home/disk2/zry/SkinMicrobiota/metaRNA/
 cd FS_FKDL210220520-1a
@@ -39,8 +41,11 @@ sortmerna --index 2 --threads 30 \
 
 5. remove host genomic sequences
 
-kneaddata -i *clean_fwd.fq -i *clean_rev.fq -db path/to/human_geome -t 30 --cat-final-output --trimmomatic path/to/trimmomatic.jar --sequencer-source TruSeq3
+kneaddata -i *clean_fwd.fq -i *clean_rev.fq -db path/to/human_geome -t 30 --cat-final-output --trimmomatic path/to/trimmomatic.jar --sequencer-source TruSeq3 --output kneaddata_out --output-prefix Sample_name
  
-6. read-based analysis
+6. gene abundance and species profile analysis
 
 for i in *kneaddata.fastq; nohup humann3 -i $i -o $i.out --threads 30 --memory-use maximum & 
+
+
+

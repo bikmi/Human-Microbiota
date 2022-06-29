@@ -1,0 +1,12 @@
+conda activate cutadaptenv
+cutadapt -g ^file:barcodes.fasta -o round1-{name}.R1.fastq.gz -p round1-{name}.R2.fastq.gz forward.fastq.gz reverse.fastq.gz -j 32 -e 0
+cutadapt -g ^file:barcodes.fasta -o round2-{name}.R2.fastq.gz -p round2-{name}.R1.fastq.gz round1-unknown.R2.fastq.gz round1-unknown.R1.fastq.gz -j 32 -e 0
+parallel -j 32  'cat round1-{}.R1.fastq.gz round2-{}.R1.fastq.gz > {}.R1.fastq.gz' ::: S1S S1F S1A S1T S1O S1N S1I S2S S2F S2A S2T S2O S2N S2I S3S S3F S3A S3T S3O S3N S3I S4S S4F S4A S4T S4O S4N S4I S5S S5F S5A S5T S5O S5N S5I
+parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz' ::: S1S S1F S1A S1T S1O S1N S1I S2S S2F S2A S2T S2O S2N S2I S3S S3F S3A S3T S3O S3N S3I S4S S4F S4A S4T S4O S4N S4I S5S S5F S5A S5T S5O S5N S5I
+
+
+
+parallel -j 32  'cat round1-{}.R1.fastq.gz round2-{}.R1.fastq.gz > {}.R1.fastq.gz' ::: S7F4 S9N4 S7N12 S3S12 S2N12 S8AI S4AI S9AI S5TI
+parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz' ::: S7F4 S9N4 S7N12 S3S12 S2N12 S8AI S4AI S9AI S5TI
+parallel -j 32  'cat round1-{}.R1.fastq.gz round2-{}.R1.fastq.gz > {}.R1.fastq.gz' ::: S6S S6F S6A S6T S6O S6N S6I S7S S7F S7A S7T S7O S7N S7I S8S S8F S8A S8T S8O S8N S8I S9S S9F S9A S9T S9O S9N S9I S10S S10F S10A S10T S10O S10N S10I
+parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz' ::: S6S S6F S6A S6T S6O S6N S6I S7S S7F S7A S7T S7O S7N S7I S8S S8F S8A S8T S8O S8N S8I S9S S9F S9A S9T S9O S9N S9I S10S S10F S10A S10T S10O S10N S10I

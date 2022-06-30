@@ -13,3 +13,6 @@ parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz
 
 
 parallel -j 32 --xapply "cutadapt --pair-adapters -g ^AGRGTTYGATYMTGGCTCAG -g ^TGCTGCCTCCCGTAGGAGT -G ^TGCTGCCTCCCGTAGGAGT -G ^AGRGTTYGATYMTGGCTCAG -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
+parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTGYCAGCMGCCGCGGTAA -g ^GGACTACNVGGGTWTCTAAT -G ^GGACTACNVGGGTWTCTAAT -G ^GTGYCAGCMGCCGCGGTAA -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
+parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTAAAAGTCGTAACAAGGTTTC -g ^GTTCAAAGAYTCGATGATTCAC -G ^GTTCAAAGAYTCGATGATTCAC -G ^GTAAAAGTCGTAACAAGGTTTC -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
+

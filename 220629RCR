@@ -10,3 +10,6 @@ parallel -j 32  'cat round1-{}.R1.fastq.gz round2-{}.R1.fastq.gz > {}.R1.fastq.g
 parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz' ::: S7F4 S9N4 S7N12 S3S12 S2N12 S8AI S4AI S9AI S5TI
 parallel -j 32  'cat round1-{}.R1.fastq.gz round2-{}.R1.fastq.gz > {}.R1.fastq.gz' ::: S6S S6F S6A S6T S6O S6N S6I S7S S7F S7A S7T S7O S7N S7I S8S S8F S8A S8T S8O S8N S8I S9S S9F S9A S9T S9O S9N S9I S10S S10F S10A S10T S10O S10N S10I
 parallel -j 32 'cat round1-{}.R2.fastq.gz round2-{}.R2.fastq.gz > {}.R2.fastq.gz' ::: S6S S6F S6A S6T S6O S6N S6I S7S S7F S7A S7T S7O S7N S7I S8S S8F S8A S8T S8O S8N S8I S9S S9F S9A S9T S9O S9N S9I S10S S10F S10A S10T S10O S10N S10I
+
+
+parallel -j 32 --xapply "cutadapt --pair-adapters -g ^AGRGTTYGATYMTGGCTCAG -g ^TGCTGCCTCCCGTAGGAGT -G ^TGCTGCCTCCCGTAGGAGT -G ^AGRGTTYGATYMTGGCTCAG -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq

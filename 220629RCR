@@ -16,9 +16,17 @@ parallel -j 32 --xapply "cutadapt --pair-adapters -g ^AGRGTTYGATYMTGGCTCAG -g ^T
 parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTGYCAGCMGCCGCGGTAA -g ^GGACTACNVGGGTWTCTAAT -G ^GGACTACNVGGGTWTCTAAT -G ^GTGYCAGCMGCCGCGGTAA -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
 parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTAAAAGTCGTAACAAGGTTTC -g ^GTTCAAAGAYTCGATGATTCAC -G ^GTTCAAAGAYTCGATGATTCAC -G ^GTAAAAGTCGTAACAAGGTTTC -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
 
+
+###########
+pacbio tools kit used to extract hifi ccs sequences
+extracthifi m64144_210705_100006.ccs.bam extracthifi.bam
+pbindex extracthifi.bam
+bam2fastq -o hifi extracthifi.bam
+
 ###########
 demultiplex PacBio ccs mixed samples, barcodes are trimed
 ###########
+
 if your barcode are ASYMMETRIC and SYMMETRIC format, two sperate demultiplex step should be performed.
 lima sample.fq lima-bc1.fasta sample.demux.fastq --hifi-preset ASYMMETRIC --split --split-named --biosample-csv biosample.csv
 lima sample.fq lima-bc1.fasta sample.demux.fastq --hifi-preset SYMMETRIC --split --split-named --biosample-csv biosample2.csv

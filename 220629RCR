@@ -16,3 +16,38 @@ parallel -j 32 --xapply "cutadapt --pair-adapters -g ^AGRGTTYGATYMTGGCTCAG -g ^T
 parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTGYCAGCMGCCGCGGTAA -g ^GGACTACNVGGGTWTCTAAT -G ^GGACTACNVGGGTWTCTAAT -G ^GTGYCAGCMGCCGCGGTAA -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
 parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTAAAAGTCGTAACAAGGTTTC -g ^GTTCAAAGAYTCGATGATTCAC -G ^GTTCAAAGAYTCGATGATTCAC -G ^GTAAAAGTCGTAACAAGGTTTC -o {1}.clean -p {2}.clean {1} {2} -e 0 --discard-untrimmed" ::: *R1.fastq ::: *R2.fastq
 
+###########
+demultiplex PacBio ccs mixed samples, barcodes are trimed
+###########
+if your barcode are ASYMMETRIC and SYMMETRIC format, two sperate demultiplex step should be performed.
+lima sample.fq lima-bc1.fasta sample.demux.fastq --hifi-preset ASYMMETRIC --split --split-named --biosample-csv biosample.csv
+lima sample.fq lima-bc1.fasta sample.demux.fastq --hifi-preset SYMMETRIC --split --split-named --biosample-csv biosample2.csv
+************OTU-based pipline
+if your use OTU-based analysis pipline, primer should be remove and re-orient into same orient.
+for i in *fastq;cutadapt -a ^AGRGTTYGATYMTGGCTCAG...AAGTCRTAACAAGGTA$ -o $i.clean $i --discard-untrimmed --revcomp -m 1000 -M 1600 --too-long-output $i.long
+
+************ASV pipline; dada2
+qiime tools import --type 'SampleData[SequencesWithQuality]' --input-path manifest.txt --output-path samples.qza --input-format SingleEndFastqManifestPhred33V2
+
+qiime demux summarize --i-data samples.qza --o-visualization samples.demux.summary.qzv
+
+qiime dada2 denoise-ccs --i-demultiplexed-seqs ./samples.qza --o-table dada2-ccs_table.qza --o-representative-sequences dada2-ccs_rep.qza --o-denoising-stats dada2-ccs_stats.qza --p-min-len 1000 --p-max-len 1600 --p-front AGRGTTYGATYMTGGCTCAG --p-adapter TACCTTGTTAYGACTT --p-n-threads 30
+
+qiime dada2 denoise-ccs --i-demultiplexed-seqs ./samples.qza --o-table dada2-ccs_table.qza --o-representative-sequences dada2-ccs_rep.qza --o-denoising-stats dada2-ccs_stats.qza --p-min-len 1000 --p-max-len 1600 --p-front ACACTCTTTCCCTACACGACGCTC --p-adapter CAAGCAGAAGACGGCATACGAG --p-n-threads 30
+
+qiime metadata tabulate --m-input-file ./dada2-ccs_stats.qza --o-visualization ./dada2-ccs_stats.qzv
+
+qiime feature-table summarize --i-table dada2-ccs_table.qza --o-visualization dada2-ccs_table.qzv --m-sample-metadata-file metadata.tsv
+
+qiime feature-table tabulate-seqs --i-data dada2-ccs_rep.qza --o-visualization dada2-ccs_rep.qzv
+
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences dada2-ccs_rep.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+
+qiime diversity alpha-rarefaction --i-table dada2-ccs_table.qza --i-phylogeny rooted-tree.qza  --p-max-depth 6000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv
+
+qiime feature-classifier classify-consensus-vsearch --i-query dada2-ccs_rep.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax
+
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+
+qiime taxa barplot --i-table dada2-ccs_table.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.tsv --o-visualization taxa-bar-plots.qzv
+ 

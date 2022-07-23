@@ -18,7 +18,9 @@ parallel -j 32 --xapply "cutadapt --pair-adapters -g ^GTAAAAGTCGTAACAAGGTTTC -g 
 
 
 ###########
-pacbio tools kit used to extract hifi ccs sequences
+pacbio tools kit used to extract hifi ccs sequences, tools installed in pacbio env
+###########
+conda activate pacbio
 extracthifi m64144_210705_100006.ccs.bam extracthifi.bam
 pbindex extracthifi.bam
 bam2fastq -o hifi extracthifi.bam

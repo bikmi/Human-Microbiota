@@ -84,3 +84,4 @@ qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --
 
 qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv --p-metrics {goods_coverage,simpson,shannon,observed_features,faith_pd}
  
+qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.tsv --o-visualization taxa-bar-plots.qzv

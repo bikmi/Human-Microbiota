@@ -60,4 +60,27 @@ qiime feature-classifier classify-consensus-vsearch --i-query dada2-ccs_rep.qza 
 qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
 
 qiime taxa barplot --i-table dada2-ccs_table.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.tsv --o-visualization taxa-bar-plots.qzv
+
+
+#############
+ITS/V12/V4
+#############
+
+qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path manifest.txt --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2
+
+qiime demux summarize --i-data paired-end-demux.qza --o-visualization paired-end-demux.qzv
+
+qiime dada2 denoise-paired --i-demultiplexed-seqs paired-end-demux.qza --p-trunc-len-f 200 --p-trunc-len-r 200 --o-representative-sequences rep-seqs-dada2.qza --o-table table-dada2.qza --o-denoising-stats stats-dada2.qza --p-n-threads 30
+
+qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-dada2.qzv --m-sample-metadata-file metadata.tsv
+
+qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
+
+qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax
+
+qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv
+
+qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --o-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree.qza --o-rooted-tree rooted-tree.qza
+
+qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv --p-metrics {goods_coverage,simpson,shannon,observed_features,faith_pd}
  

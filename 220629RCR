@@ -76,6 +76,8 @@ qiime feature-table summarize --i-table table-dada2.qza --o-visualization table-
 
 qiime feature-table tabulate-seqs --i-data rep-seqs-dada2.qza --o-visualization rep-seqs-dada2.qzv
 
+qiime metadata tabulate --m-input-file stats-dada2.qza --o-visualization stats-dada2.qzv
+
 qiime feature-classifier classify-consensus-vsearch --i-query rep-seqs-dada2.qza --i-reference-reads /home/disk2/DATABAE/QIIME2/silva-138-99-seqs.qza --i-reference-taxonomy /home/disk2/DATABAE/QIIME2/silva-138-99-tax.qza --p-threads 30 --o-classification vsearch-tax
 
 qiime metadata tabulate --m-input-file vsearch-tax.qza --o-visualization vsearch-tax.qzv

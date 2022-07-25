@@ -87,3 +87,11 @@ qiime phylogeny align-to-tree-mafft-fasttree --i-sequences rep-seqs-dada2.qza --
 qiime diversity alpha-rarefaction --i-table table-dada2.qza --i-phylogeny rooted-tree.qza  --p-max-depth 20000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv --p-metrics {goods_coverage,simpson,shannon,observed_features,faith_pd}
  
 qiime taxa barplot --i-table table-dada2.qza --i-taxonomy vsearch-tax.qza --m-metadata-file metadata.tsv --o-visualization taxa-bar-plots.qzv
+
+#####################
+kraken2 classify base on silva138, metageome and metatranscriptome 16S rRNA gene
+#####################
+install kraken2 and bracken
+kraken2-build --db silva138 --special silva
+bracken-build -d ../silva138 -t 30 -k 35 -l 150
+parallel -j 1 --xapply "kraken2 --db /home/server/silva138 --report {1}.report --use-mpa-style --paired --threads 30 --output {1}.out {1} {2} " ::: *R1_val_1.fq ::: *R2_val_2.fq

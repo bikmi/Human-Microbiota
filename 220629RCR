@@ -104,6 +104,6 @@ bracken-build -d ../silva138LSU -t 30 -k 35 -l 150
 
 
 parallel -j 1 --xapply "kraken2 --db /home/server/silva138 --report {1}.report --use-mpa-style --paired --threads 30 --output {1}.out {1} {2} " ::: *R1_val_1.fq ::: *R2_val_2.fq
-parallel -j 1 "/home/server/Bracken-2.7/bracken -d /home/server/silva138 -i 6_1_clean.kneaddata.fastq.report -o {}.bracken -r 150 -l G -t 30" ::: *fastq
-parallel -j 7 "/home/server/KrakenTools-1.2/kreport2mpa.py  --percentages -r {} -o {}.mpa" ::: *report
+parallel -j 1 "/home/server/Bracken-2.7/bracken -d /home/server/silva138SSU -i {} -o {}.bracken -r 150 -l G -t 30" ::: *report
+parallel -j 7 "/home/server/KrakenTools-1.2/kreport2mpa.py --percentages -r {} -o {}.mpa" ::: *report
 /home/server/KrakenTools-1.2/combine_mpa.py --i *mpa -o merge.mpa

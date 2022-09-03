@@ -1,0 +1,39 @@
+trim.seqs(fasta=sample.fasta,qfile=sample.qual,oligos=oligo-S6.txt,checkorient=T,bdiffs=2,pdiffs=4,maxambig=0,maxhomop=8,qwindowsize=50,qwindowaverage=35,flip=T,allfiles=T,minlength=1200,maxlength=2000)
+
+summary.seqs(fasta=sample.trim.fasta, count=sample.trim.count_table)
+
+unique.seqs(fasta=sample.trim.fasta, count=sample.trim.count_table)
+
+summary.seqs(fasta=sample.trim.unique.fasta, count=sample.trim.unique.count_table)
+
+align.seqs(fasta=sample.trim.unique.fasta,reference=/home/disk2/DATABAE/Mothur/silva.nr_v138.align,flip=T)
+
+summary.seqs(fasta=sample.trim.unique.align,count=sample.trim.unique.count_table)
+
+screen.seqs(fasta=sample.trim.unique.align,count=sample.trim.unique.count_table,start=1044,end=43116)
+
+summary.seqs(fasta=sample.trim.unique.good.align, count=sample.trim.unique.good.count_table)
+
+filter.seqs(fasta=sample.trim.unique.good.align, vertical=T, trump=.)
+
+unique.seqs(fasta=sample.trim.unique.good.filter.fasta, count=sample.trim.unique.good.count_table)
+
+pre.cluster(fasta=sample.trim.unique.good.filter.unique.fasta,count=sample.trim.unique.good.filter.count_table,diffs=15)
+
+chimera.vsearch(fasta=sample.trim.unique.good.filter.unique.precluster.fasta, count=sample.trim.unique.good.filter.unique.precluster.count_table, dereplicate=t)
+
+summary.seqs(fasta=current, count=current)
+
+classify.seqs(fasta=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.fasta, count=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.count_table, reference=/home/disk2/DATABAE/Mothur/silva.seed_v138_1.align, taxonomy=/home/disk2/DATABAE/Mothur/silva.seed_v138_1.tax)
+
+remove.lineage(fasta=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.fasta, count=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.count_table, taxonomy=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.seed_v138_1.wang.taxonomy, taxon=Cyanobacteria)
+
+summary.tax(taxonomy=current, count=current)
+
+make.shared(count=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
+
+classify.otu(list=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.asv.list, count=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, taxonomy=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.seed_v138_1.wang.pick.taxonomy, label=ASV)
+
+count.seqs(count=sample.asv.map,count=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table,compress=f)
+
+rename.seqs(fasta=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.fasta,map=sample.asv.map)

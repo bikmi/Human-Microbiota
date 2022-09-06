@@ -56,7 +56,7 @@ sed 's/OTU\tTaxonomy/Feature ID\tTaxon/' tax.tsv > taxonomy.tsv
 
 qiime tools import --type 'FeatureData[Taxonomy]' --input-path taxonomy.tsv --output-path taxonomy_table.qza --input-format TSVTaxonomyFormat
 
-qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.txt --o-visualization taxa-bar-plots.qzv
+qiime taxa barplot --i-table frequency_table.qza --i-taxonomy taxonomy_table.qza --m-metadata-file metadata.tsv --o-visualization taxa-bar-plots.qzv
 
 rename.seqs(fasta=sample.trim.unique.good.filter.unique.precluster.denovo.vsearch.pick.fasta,map=sample.asv.map)
 

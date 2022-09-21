@@ -70,7 +70,8 @@ qiime diversity core-metrics-phylogenetic --i-phylogeny rooted-tree.qza --i-tabl
 
 qiime diversity alpha-rarefaction --i-table frequency_table.qza --i-phylogeny rooted-tree.qza  --p-max-depth 10000 --m-metadata-file metadata.tsv --o-visualization alpha-rarefaction.qzv --p-metrics {goods_coverage,simpson,shannon,observed_features,faith_pd}
 
+qiime feature-table merge --i-tables ../RNAV12/frequency_table.qza ../V12/frequency_table.qza ../V4/frequency_table.qza ../V18/frequency_table.qza ../V19/frequency_table.qza --o-merged-table merged_table.qza
 
+qiime feature-table merge-taxa --i-data ../RNAV12/taxonomy_table.qza ../V12/taxonomy_table.qza ../V4/taxonomy_table.qza ../V18/taxonomy_table.qza ../V19/taxonomy_table.qza --o-merged-data merged_taxonomy.qza
 
-
-
+qiime feature-table merge-seqs --i-data ../RNAV12/sequences.qza ../V12/sequences.qza ../V4/sequences.qza ../V18/sequences.qza ../V19/sequences.qza --o-merged-data merged_seqs.qza

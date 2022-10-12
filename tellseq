@@ -1,0 +1,4 @@
+/home/server/tellread-release/run_tellread_fq.sh -i1 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/R22028747-Spit-Spit_combined_R2.fastq.gz -r1 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/R22028747-Spit-Spit_combined_R1.fastq.gz -r2 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/R22028747-Spit-Spit_combined_R3.fastq.gz -o /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/saliva -g NONE
+
+/home/server/tellink-release/run_tellink.sh -r1 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/saliva/Full/saliva_R1_T500.fastq.gz.corrected.fastq.err_barcode_removed.fastq.gz -r2 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/saliva/Full/saliva_R2_T500.fastq.gz.corrected.fastq.err_barcode_removed.fastq.gz -i1 /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/saliva/Full/saliva_I1_T500.fastq.gz.corrected.fastq.err_barcode_removed.fastq.gz -o /home/disk4/zhangruyi/Sample_R22028747-Spit-Spit/telllink_out -d metagenomics -k 115 -lc 79 -p saliva -j 30
+

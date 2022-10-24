@@ -75,3 +75,14 @@ qiime feature-table merge --i-tables ../RNAV12/frequency_table.qza ../V12/freque
 qiime feature-table merge-taxa --i-data ../RNAV12/taxonomy_table.qza ../V12/taxonomy_table.qza ../V4/taxonomy_table.qza ../V18/taxonomy_table.qza ../V19/taxonomy_table.qza --o-merged-data merged_taxonomy.qza
 
 qiime feature-table merge-seqs --i-data ../RNAV12/sequences.qza ../V12/sequences.qza ../V4/sequences.qza ../V18/sequences.qza ../V19/sequences.qza --o-merged-data merged_seqs.qza
+
+qiime feature-table filter-features --i-table merged_table.qza --p-min-frequency 2 --o-filtered-table merged-table-singleton-filtered.qza
+
+qiime feature-table rarefy --i-table merged-table-singleton-filtered.qza --p-sampling-depth 100 --o-rarefied-table rarefied100.qza
+
+qiime taxa collapse --i-table rarefied100.qza --i-taxonomy merged_taxonomy.qza --p-level 7 --o-collapsed-table rarefied100-tax-l7.qza
+
+qiime tools export --input-path rarefied100-tax-l7.qza --output-path rarefied100-tax-l7
+
+cd rarefied100-tax-l7
+biom convert -i feature-table.biom -o table.tsv --to-tsv

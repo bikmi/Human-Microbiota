@@ -86,3 +86,14 @@ qiime tools export --input-path rarefied100-tax-l7.qza --output-path rarefied100
 
 cd rarefied100-tax-l7
 biom convert -i feature-table.biom -o table.tsv --to-tsv
+
+qiime feature-table filter-samples --i-table merged_table.qza --m-metadata-file merged_metadata.tsv --p-where "[treatmentgroup]='Scalp'" --o-filtered-table all-Scalp.qza
+
+qiime feature-table summarize --i-table all-Scalp.qza --o-visualization all-Scalp.qzv --m-sample-metadata-file merged_metadata.tsv
+
+qiime feature-table filter-samples --i-table merged_table.qza --m-metadata-file merged_metadata.tsv --p-where "[treatmentgroup]=\'%s\' AND [subject]=\'%d\'" --o-filtered-table S%d-%s.qza' % (i, 1, 1, i.replace(' ', '')))
+
+qiime feature-table group --i-table merged_table.qza --p-axis sample --m-metadata-file merged_metadata.tsv --m-metadata-column "typeandtreatment" --p-mode mean-ceiling --o-grouped-table grouped_subject.qza
+
+qiime taxa barplot --i-table grouped_subject.qza  --i-taxonomy merged_taxonomy.qza --m-metadata-file merged_metadata.tsv --o-visualization grouped_subject-bar-plots.qzv
+

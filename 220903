@@ -82,6 +82,8 @@ qiime feature-table rarefy --i-table merged-table-singleton-filtered.qza --p-sam
 
 qiime taxa collapse --i-table rarefied100.qza --i-taxonomy merged_taxonomy.qza --p-level 7 --o-collapsed-table rarefied100-tax-l7.qza
 
+qiime feature-table relative-frequency --i-table rarefied3000-tax-l6.qza --o-relative-frequency-table rarefied3000-tax-l6-relative.qza
+
 qiime tools export --input-path rarefied100-tax-l7.qza --output-path rarefied100-tax-l7
 
 cd rarefied100-tax-l7

@@ -1,0 +1,17 @@
+# assembly
+docker run --rm -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq Trinity --seqType fq --left `pwd`/1_1.mRNA.fwd.fq.gz,`pwd`/1_2.mRNA.fwd.fq.gz --right `pwd`/1_1.mRNA.rev.fq.gz,`pwd`/1_2.mRNA.rev.fq.gz --max_memory 60G --CPU 40 --SS_lib_type RF --output `pwd`/1.trinity
+# align and estimate abundance
+docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_and_estimate_abundance.pl --transcripts `pwd`/1.trinity.Trinity.fasta --est_method RSEM --seqType fq --aln_method bowtie --trinity_mode --prep_reference --SS_lib_type RF  --left `pwd`/1_1.mRNA.fwd.fq.gz --right `pwd`/1_1.mRNA.rev.fq.gz --output_dir `pwd`/1_1.rsem
+
+docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_and_estimate_abundance.pl --transcripts `pwd`/1.trinity.Trinity.fasta --est_method RSEM --seqType fq --aln_method bowtie --trinity_mode --prep_reference --SS_lib_type RF  --left `pwd`/1_2.mRNA.fwd.fq.gz --right `pwd`/1_2.mRNA.rev.fq.gz --output_dir `pwd`/1_2.rsem
+
+# enter into the trinity env
+ docker run --rm -it -v `pwd`:`pwd` trinityrnaseq/trinityrnaseq  bash
+# abundance matrix transform
+ /usr/local/bin/util/abundance_estimates_to_matrix.pl --est_method RSEM --gene_trans_map 1.trinity.Trinity.fasta.gene_trans_map --out_prefix rsem --name_sample_by_basedir 1_1.rsem/RSEM.isoforms.results 1_2.rsem/RSEM.isoforms.results 
+# Ex50 estimate
+ /usr/local/bin/util/misc/contig_ExN50_statistic.pl rsem.isoform.TMM.EXPR.matrix 1.trinity.Trinity.fasta transcript | tee ExN50.1.transcript.stats
+# plot
+ /usr/local/bin/util/misc/plot_ExN50_statistic.Rscript  ExN50.1.transcript.stats
+# DE analysis
+ /usr/local/bin/Analysis/DifferentialExpression/run_DE_analysis.pl --matrix rsem.isoform.counts.matrix --method edgeR --dispersion 0.1

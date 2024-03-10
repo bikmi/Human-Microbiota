@@ -31,3 +31,5 @@ docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_a
 # mmseqs
 mmseqs easy-search -s 4 -e 1e-5 --min-seq-id 0.95 --search-type 3 --min-aln-len 400 --threads 40 1.ont.fa subflava.fna 1.ont.out tmp
 
+# gtdbtk
+gtdbtk classify_wf --genome_dir dereplicated_genomes/ -x fasta --cpus 40 --pplacer_cpus 40 --out_dir gtdbtk --skip_ani_screen

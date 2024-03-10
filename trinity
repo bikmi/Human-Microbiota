@@ -1,5 +1,17 @@
 # assembly
 docker run --rm -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq Trinity --seqType fq --left `pwd`/1_1.mRNA.fwd.fq.gz,`pwd`/1_2.mRNA.fwd.fq.gz --right `pwd`/1_1.mRNA.rev.fq.gz,`pwd`/1_2.mRNA.rev.fq.gz --max_memory 60G --CPU 40 --SS_lib_type RF --output `pwd`/1.trinity
+
+# genome guide assembly
+prokka B17.SemiBin_0.fasta -o parainfluenzae_prokka
+gffread PROKKA_03092024.gff -T -o PROKKA_03092024.gtf
+STAR --runMode genomeGenerate --genomeDir ./parainfluenzae --genomeFastaFiles B17.SemiBin_0.fasta --sjdbGTFfile parainfluenzae_prokka/PROKKA_03092024.gtf --runThreadN 40 --genomeSAindexNbases 9
+for i in $(ls |grep 'mRNA'|awk -F '.' '{print $1}'|sort|uniq); do STAR --genomeDir parainfluenzae --readFilesIn $i.mRNA.fwd.fq.gz $i.mRNA.rev.fq.gz --runThreadN 40 --outFileNamePrefix $i.mRNA.parainfluenzae --readFilesCommand gunzip -c ;done
+samtools view -@ 40 -bS input.sam -o output.bam
+samtools sort -@ 40 input.bam -o sorted.bam
+for i in $(ls|grep 'subflava.sorted.bam'| awk -F '.' '{print $1}'); do samtools fastq -@ 40 -1 $i.subflava.fwd.fastq -2 $i.subflava.rev.fastq $i.subflava.sorted.bam; done
+
+
+
 # align and estimate abundance
 docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_and_estimate_abundance.pl --transcripts `pwd`/1.trinity.Trinity.fasta --est_method RSEM --seqType fq --aln_method bowtie --trinity_mode --prep_reference --SS_lib_type RF  --left `pwd`/1_1.mRNA.fwd.fq.gz --right `pwd`/1_1.mRNA.rev.fq.gz --output_dir `pwd`/1_1.rsem
 
@@ -15,3 +27,7 @@ docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_a
  /usr/local/bin/util/misc/plot_ExN50_statistic.Rscript  ExN50.1.transcript.stats
 # DE analysis
  /usr/local/bin/Analysis/DifferentialExpression/run_DE_analysis.pl --matrix rsem.isoform.counts.matrix --method edgeR --dispersion 0.1
+
+# mmseqs
+mmseqs easy-search -s 4 -e 1e-5 --min-seq-id 0.95 --search-type 3 --min-aln-len 400 --threads 40 1.ont.fa subflava.fna 1.ont.out tmp
+

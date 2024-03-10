@@ -1,6 +1,6 @@
 # assembly
 docker run --rm -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq Trinity --seqType fq --left `pwd`/1_1.mRNA.fwd.fq.gz,`pwd`/1_2.mRNA.fwd.fq.gz --right `pwd`/1_1.mRNA.rev.fq.gz,`pwd`/1_2.mRNA.rev.fq.gz --max_memory 60G --CPU 40 --SS_lib_type RF --output `pwd`/1.trinity
-
+Trinity --seqType fq --max_memory 120G --CPU 40 --SS_lib_type RF --output mitis.denovo.trinity --min_contig_length 500 --samples_file sample_mitis.txt
 # genome guide assembly
 prokka B17.SemiBin_0.fasta -o parainfluenzae_prokka
 gffread PROKKA_03092024.gff -T -o PROKKA_03092024.gtf

@@ -19,6 +19,8 @@ docker run -v`pwd`:`pwd` trinityrnaseq/trinityrnaseq /usr/local/bin/util/align_a
 
 # enter into the trinity env
  docker run --rm -it -v `pwd`:`pwd` trinityrnaseq/trinityrnaseq  bash
+# abudance
+/usr/local/bin/util/align_and_estimate_abundance.pl --transcripts mitis.denovo.trinity.Trinity.fasta --est_method RSEM --seqType fq --aln_method bowtie2 --trinity_mode --prep_reference --SS_lib_type RF --samples_file sample_mitis.txt --output_dir mitis.rsem --thread_count 40
 # abundance matrix transform
  /usr/local/bin/util/abundance_estimates_to_matrix.pl --est_method RSEM --gene_trans_map 1.trinity.Trinity.fasta.gene_trans_map --out_prefix rsem --name_sample_by_basedir 1_1.rsem/RSEM.isoforms.results 1_2.rsem/RSEM.isoforms.results 
 # Ex50 estimate
@@ -33,3 +35,12 @@ mmseqs easy-search -s 4 -e 1e-5 --min-seq-id 0.95 --search-type 3 --min-aln-len 
 
 # gtdbtk
 gtdbtk classify_wf --genome_dir dereplicated_genomes/ -x fasta --cpus 40 --pplacer_cpus 40 --out_dir gtdbtk --skip_ani_screen
+
+# transDecoder
+TransDecoder.LongOrfs -t subflava.denovo.trinity.Trinity.fasta
+TransDecoder.Predict -t subflava.denovo.trinity.Trinity.fasta
+
+# kofamscan
+exec_annotation -f mapper -o $i.ko $i --cpu 40
+exec_annotation -f detail-tsv -o $i.kofam $i --cpu 40
+
